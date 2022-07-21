@@ -1,0 +1,20 @@
+Package: TransPhyloMulti
+Title: TransPhylo With Multiple Samples Per Host
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Jake",
+           family = "Carson",
+           role = c("aut", "cre"),
+           email = "jake.carson@warwick.ac.uk",
+           comment = c(ORCID = "0000-0002-7896-0971"))
+Description: Reconstruction of transmission trees using genomic data. Builds on
+    TransPhylo by allowing multiple samples per host.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+LinkingTo: 
+    Rcpp
+Imports: 
+    Rcpp
