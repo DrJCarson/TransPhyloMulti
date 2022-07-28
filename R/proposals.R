@@ -341,3 +341,76 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
   return(new_ctree)
 
 }
+
+
+#' Proposal to remove a transmission
+#'
+#' @param ctree Current coloured tree.
+#'
+#' @export
+remove_transmission <- function(ctree) {
+
+  nam <- ctree$nam
+  ctree <- ctree$ctree
+
+  tr_idx <- which(ctree[, 2] > 0 & ctree[, 3] == 0)
+
+  # Transmission time, infector, infected host
+  #tr_uni <- unique(cbind(ctree[tr_idx, 1], ctree[tr_idx, 4], ctree[ctree[tr_idx, 2], 4]))
+  #sam <- sample(1:dim(tr_uni)[1], size = 1)
+  #sam_time <- tr_uni[sam, 1]
+  #sam_host1 <- tr_uni[sam, 2]
+  #sam_host2 <- tr_uni[sam, 3]
+
+
+  sam_tr <- sample(1:(length(tr_idx) - 1), size = 1)
+  sam_ct <- tr_idx[sam_tr]
+
+  sam_time <- ctree[sam_ct, 1]
+  sam_host1 <- ctree[sam_ct, 4]
+  sam_host2 <- ctree[ctree[sam_ct, 2], 4]
+
+  sam_tr_ex <- which(ctree[tr_idx, 1] == sam_time &
+                       ctree[tr_idx, 3] == 0 &
+                       ctree[tr_idx, 4] == sam_host1 &
+                       ctree[ctree[tr_idx, 2], 4] == sam_host2)
+
+  sam_ct_ex <- tr_idx[sam_tr_ex]
+
+  ctree[which(ctree[, 4] == sam_host2), 4] <- sam_host1
+
+  for (r in 1:length(sam_ct_ex)) {
+
+    tr_row <- sam_ct_ex[r]
+    nxt_row <- ctree[tr_row, 2]
+
+    prv_col <- 2
+    prv_row <- which(ctree[, 2] == tr_row)
+
+    if (length(prv_row) == 0) {
+
+      prv_col <- 3
+      prv_row <- which(ctree[, 3] == tr_row)
+
+    }
+
+    ctree[prv_row, prv_col] <- nxt_row
+
+  }
+
+  for (r in length(sam_ct_ex):1) {
+
+    ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] <- ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] - 1
+
+  }
+
+  ctree <- ctree[-sam_ct_ex, ]
+
+  ctree[, 4][which(ctree[, 4] > sam_host2)] <- ctree[, 4][which(ctree[, 4] > sam_host2)] - 1
+
+  new_ctree <- list(ctree = ctree, nam = nam)
+  class(new_ctree) <- 'ctree'
+
+  return(new_ctree)
+
+}
