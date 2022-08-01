@@ -83,52 +83,52 @@ num_approx_disc <- function(grid,
 #'
 #' @export
 sim_ongoing <- function(off.r = 1,
-                          off.p = 0.5,
-                          lm_const = 0.2,
-                          lm_rate = 0.2,
-                          pi = 0.5,
-                          add.prob = 0.1,
-                          add.sep = 14 / 365,
-                          w.shape = 2,
-                          w.scale = 1,
-                          ws.shape = NA,
-                          ws.scale = NA,
-                          w.mean = NA,
-                          w.std = NA,
-                          ws.mean = NA,
-                          ws.std = NA,
-                          dateStartOutbreak = 2000,
-                          dateS = NA,
-                          dateT = 2010,
-                          delta = 1 / 365) {
+                        off.p = 0.5,
+                        lm_const = 0.2,
+                        lm_rate = 0.2,
+                        pi = 0.5,
+                        add.prob = 0.1,
+                        add.sep = 14 / 365,
+                        w.shape = 2,
+                        w.scale = 1,
+                        ws.shape = NULL,
+                        ws.scale = NULL,
+                        w.mean = NULL,
+                        w.std = NULL,
+                        ws.mean = NULL,
+                        ws.std = NULL,
+                        dateStartOutbreak = 2000,
+                        dateS = NULL,
+                        dateT = 2010,
+                        delta = 1 / 365) {
 
-  if (!is.na(w.mean) && !is.na(w.std)) {
+  if (!is.null(w.mean) && !is.null(w.std)) {
 
-    w.shape = w.mean ^ 2 / w.std ^ 2
-    w.scale = w.std ^ 2 / w.mean
-
-  }
-
-  if (!is.na(ws.mean) && !is.na(ws.std)) {
-
-    ws.shape = ws.mean ^ 2 / ws.std ^ 2
-    ws.scale = ws.std ^ 2 / ws.mean
+    w.shape <- w.mean ^ 2 / w.std ^ 2
+    w.scale <- w.std ^ 2 / w.mean
 
   }
 
-  if (is.na(ws.shape)) {
+  if (!is.null(ws.mean) && !is.null(ws.std)) {
 
-    ws.shape = w.shape
-
-  }
-
-  if (is.na(ws.scale)) {
-
-    ws.scale = w.scale
+    ws.shape <- ws.mean ^ 2 / ws.std ^ 2
+    ws.scale <- ws.std ^ 2 / ws.mean
 
   }
 
-  if (is.na(dateS)) {
+  if (is.null(ws.shape)) {
+
+    ws.shape <- w.shape
+
+  }
+
+  if (is.null(ws.scale)) {
+
+    ws.scale <- w.scale
+
+  }
+
+  if (is.null(dateS)) {
 
     dateS <- dateStartOutbreak
 
@@ -280,24 +280,27 @@ sim_ongoing <- function(off.r = 1,
   ctree[, 1] <- obs[, 1]
   ctree[, 4] <- obs[, 2]
 
-  ctree <- rbind(ctree, matrix(0, sams - 1, 4))
+  if (sams > 1) {
 
-  for (r in (sams + 1):(2 * sams - 1)) {
+    ctree <- rbind(ctree, matrix(0, sams - 1, 4))
 
-    ctree[r, ] <- c(ige_out$nodes$time[r],
-                    which(ige_out$nodes$ancestor == r),
-                    ige_out$nodes$individual[r])
+    for (r in (sams + 1):(2 * sams - 1)) {
+
+      ctree[r, ] <- c(ige_out$nodes$time[r],
+                      which(ige_out$nodes$ancestor == r),
+                      ige_out$nodes$individual[r])
+
+    }
+
+    ord <- c(1:sams, sams + order(ctree[(sams + 1):(2 * sams - 1), 1], decreasing = T))
+    invord = 1:length(ord)
+    invord[ord] = 1:length(ord)
+
+    ctree[, ] <- ctree[ord, ]
+    ctree[which(ctree[, 2] > 0), 2] <- invord[ctree[which(ctree[, 2] > 0), 2]]
+    ctree[which(ctree[, 3] > 0), 3] <- invord[ctree[which(ctree[, 3] > 0), 3]]
 
   }
-
-  ord <- c(1:sams, sams + order(ctree[(sams + 1):(2 * sams - 1), 1], decreasing = T))
-  invord = 1:length(ord)
-  invord[ord] = 1:length(ord)
-
-  ctree[, ] <- ctree[ord, ]
-  ctree[which(ctree[, 2] > 0), 2] <- invord[ctree[which(ctree[, 2] > 0), 2]]
-  ctree[which(ctree[, 3] > 0), 3] <- invord[ctree[which(ctree[, 3] > 0), 3]]
-
 
   i <- 1
   j <- length(ctree[, 1]) + 1
@@ -314,7 +317,7 @@ sim_ongoing <- function(off.r = 1,
         ctree <- rbind(ctree, rep(0, 4))
 
         ctree[j, ] <- c(ttree[ti, 1], i, 0, ttree[ti, 3])
-        ctree[r, which(ctree[r, 2:3] == i) + 1] <- j
+#        ctree[r, which(ctree[r, 2:3] == i) + 1] <- j
 
         j <- j + 1
 
