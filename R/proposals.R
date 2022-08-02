@@ -335,6 +335,8 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
 
   }
 
+  ctree <- order_hosts(ctree)
+
   new_ctree <- list(ctree = ctree, nam = nam)
   class(new_ctree) <- 'ctree'
 
@@ -354,14 +356,6 @@ remove_transmission <- function(ctree) {
   ctree <- ctree$ctree
 
   tr_idx <- which(ctree[, 2] > 0 & ctree[, 3] == 0)
-
-  # Transmission time, infector, infected host
-  #tr_uni <- unique(cbind(ctree[tr_idx, 1], ctree[tr_idx, 4], ctree[ctree[tr_idx, 2], 4]))
-  #sam <- sample(1:dim(tr_uni)[1], size = 1)
-  #sam_time <- tr_uni[sam, 1]
-  #sam_host1 <- tr_uni[sam, 2]
-  #sam_host2 <- tr_uni[sam, 3]
-
 
   sam_tr <- sample(1:(length(tr_idx) - 1), size = 1)
   sam_ct <- tr_idx[sam_tr]
@@ -407,6 +401,8 @@ remove_transmission <- function(ctree) {
   ctree <- ctree[-sam_ct_ex, ]
 
   ctree[, 4][which(ctree[, 4] > sam_host2)] <- ctree[, 4][which(ctree[, 4] > sam_host2)] - 1
+
+  ctree <- order_hosts(ctree)
 
   new_ctree <- list(ctree = ctree, nam = nam)
   class(new_ctree) <- 'ctree'
