@@ -355,9 +355,17 @@ remove_transmission <- function(ctree) {
   nam <- ctree$nam
   ctree <- ctree$ctree
 
+  obs_idx <- which(ctree[, 2] == 0 & ctree[, 3] == 0)
+  obs_host <- ctree[obs_idx, 4]
+
   tr_idx <- which(ctree[, 2] > 0 & ctree[, 3] == 0)
 
-  sam_tr <- sample(1:(length(tr_idx) - 1), size = 1)
+  tr_host1 <- ctree[tr_idx, 4]
+  tr_host2 <- ctree[ctree[tr_idx, 2], 4]
+
+  tr_idx <- tr_idx[!((tr_host1 %in% obs_host) & (tr_host2 %in% obs_host)) & tr_host1 != 0]
+
+  sam_tr <- sample(1:length(tr_idx), size = 1)
   sam_ct <- tr_idx[sam_tr]
 
   sam_time <- ctree[sam_ct, 1]
