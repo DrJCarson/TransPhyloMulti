@@ -2,5 +2,6 @@
 
 export(add_transmission)
 export(order_hosts)
+export(remove_add_local)
 export(remove_transmission)
 export(sim_ongoing)
