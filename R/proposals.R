@@ -402,13 +402,15 @@ remove_transmission <- function(ctree) {
 
   for (r in length(sam_ct_ex):1) {
 
-    ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] <- ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] - 1
+    ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] <-
+      ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] - 1
 
   }
 
   ctree <- ctree[-sam_ct_ex, ]
 
-  ctree[, 4][which(ctree[, 4] > sam_host2)] <- ctree[, 4][which(ctree[, 4] > sam_host2)] - 1
+  ctree[, 4][which(ctree[, 4] > sam_host2)] <-
+    ctree[, 4][which(ctree[, 4] > sam_host2)] - 1
 
   ctree <- order_hosts(ctree)
 
@@ -429,30 +431,33 @@ remove_transmission <- function(ctree) {
 #' @export
 remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
+  # Random numbers for sampling
   u1 <- runif(1)
   u2 <- runif(1)
 
+  # Extract ctree
   nam <- ctree$nam
   ctree <- ctree$ctree
 
+  # Transmission rows
   tr_idx <- which(ctree[, 2] > 0 & ctree[, 3] == 0)
 
-  tr_host1 <- ctree[tr_idx, 4]
-#  tr_host2 <- ctree[ctree[tr_idx, 2], 4]
-
-#  tr_idx <- tr_idx[tr_host1 != 0]
-
+  # Sample transmission and corresponding row in ctree
   sam_tr <- sample(1:length(tr_idx), size = 1)
   sam_ct <- tr_idx[sam_tr]
 
+  # Transmission information
   sam_time <- ctree[sam_ct, 1]
   sam_host1 <- ctree[sam_ct, 4]
   sam_host2 <- ctree[ctree[sam_ct, 2], 4]
 
+  # Propose new root time
   if (sam_host1 == 0) {
 
+    # Perturb root time
     ctree[sam_ct, 1] <- sam_time + rnorm(1, mean = 0, sd = delta)
 
+    # Reflect if proposed time exceeds next event time
     if (ctree[sam_ct, 1] > ctree[ctree[sam_ct, 2], 1]) {
 
       rebound <- ctree[sam_ct, 1] - ctree[ctree[sam_ct, 2], 1]
@@ -461,8 +466,12 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     }
 
+  # Remove transmission and replace it
   } else {
 
+    ##################### Remove transmission ##################################
+
+    # Find all ctree rows corresponding to transmission
     sam_tr_ex <- which(ctree[tr_idx, 1] == sam_time &
                          ctree[tr_idx, 3] == 0 &
                          ctree[tr_idx, 4] == sam_host1 &
@@ -470,9 +479,14 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     sam_ct_ex <- tr_idx[sam_tr_ex]
 
-    prv_host <- ctree[which(ctree[, 4] == sam_host2), 4]
+    # Hosts before removal
+#    prv_host <- ctree[which(ctree[, 4] == sam_host2), 4]
+    prv_host <- ctree[, 4]
+
+    # Replace removed host in ctree
     ctree[which(ctree[, 4] == sam_host2), 4] <- sam_host1
 
+    # Remove sampled transmission rows from ctree
     for (r in 1:length(sam_ct_ex)) {
 
       tr_row <- sam_ct_ex[r]
@@ -494,14 +508,19 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     for (r in length(sam_ct_ex):1) {
 
-      ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] <- ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] - 1
+      ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] <-
+        ctree[, 2:3][which(ctree[, 2:3] > sam_ct_ex[r])] - 1
 
     }
 
     ctree <- ctree[-sam_ct_ex, ]
 
+
+    ##################### Re-add transmission ##################################
+
     # Rows for transmission or observations in host
-    leaves <- which(ctree[, 3] == 0 & (ctree[, 4] == sam_host1 | ctree[, 4] == sam_host2))
+    leaves <- which(ctree[, 3] == 0 &
+                      (ctree[, 4] == sam_host1 | ctree[, 4] == sam_host2))
     L <- length(leaves)
 
     # Event type (observation = 1, transmission = 2) for each leaf
@@ -509,10 +528,11 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
       2 * (ctree[leaves, 2] > 0 & ctree[leaves, 3] == 0)
 
     # Corresponding host to type (sampled or infected individual)
+    #  host2 <- ctree[leaves, 4]
+    #  host2 <- rep(host, length(leaves))
 
-  #  host2 <- ctree[leaves, 4]
+    # Corresponding host to type (sampled or infected individual)
     host2 <- prv_host[leaves]
-  #  host2 <- rep(host, length(leaves))
     host2[which(type == 2)] <- ctree[ctree[leaves[which(type == 2)], 2], 4]
 
     # All rows assigned to host
@@ -549,7 +569,6 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     }
 
-
     # Extend active array to account for non-bottleneck combinations
     active_ex <- active
 
@@ -572,10 +591,29 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
       }
 
-
       if (length(host2[l1[which(type[l1] == 2)]]) > 0 & length(host2[l2[which(type[l2] == 2)]]) > 0) {
 
         if (any(host2[l1[which(type[l1] == 2)]] %in% host2[l2[which(type[l2] == 2)]])) {
+
+          len_ex[r] <- 0
+
+        }
+
+      }
+
+      if (length(host2[l1[which(type[l1] == 1)]]) > 0) {
+
+        if (length(unique(host2[l1[which(type[l1] == 1)]])) > 1) {
+
+          len_ex[r] <- 0
+
+        }
+
+      }
+
+      if (length(host2[l2[which(type[l2] == 1)]]) > 0) {
+
+        if (length(unique(host2[l2[which(type[l2] == 1)]])) > 1) {
 
           len_ex[r] <- 0
 
@@ -631,6 +669,27 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
             }
 
           }
+
+          if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0) {
+
+            if (length(unique(host2[leaves_1[which(type[leaves_1] == 1)]])) > 1) {
+
+              next
+
+            }
+
+          }
+
+          if (length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
+
+            if (length(unique(host2[leaves_2[which(type[leaves_2] == 1)]])) > 1) {
+
+              next
+
+            }
+
+          }
+
 
           inc_bin <- sum(inc_active * 2^(0:(L - 1)))
 
@@ -720,6 +779,26 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
         if (length(host2[leaves_1[which(type[leaves_1] == 2)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 2)]]) > 0) {
 
           if (any(host2[leaves_1[which(type[leaves_1] == 2)]] %in% host2[leaves_2[which(type[leaves_2] == 2)]])) {
+
+            next
+
+          }
+
+        }
+
+        if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0) {
+
+          if (length(unique(host2[leaves_1[which(type[leaves_1] == 1)]])) > 1) {
+
+            next
+
+          }
+
+        }
+
+        if (length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
+
+          if (length(unique(host2[leaves_2[which(type[leaves_2] == 1)]])) > 1) {
 
             next
 
