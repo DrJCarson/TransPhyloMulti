@@ -4,18 +4,18 @@
 \alias{add_transmission}
 \title{Proposal to add a transmission}
 \usage{
-add_transmission(ctree, host, u1, u2, bn_weight = 0.1)
+add_transmission(ctree, bn_weight = 0.1)
 }
 \arguments{
 \item{ctree}{Current coloured tree.}
+
+\item{bn_weight}{Penalisation term for transmitting multiple lineages.}
 
 \item{host}{Proposed infector.}
 
 \item{u1}{Random number that determines transmission structure.}
 
 \item{u2}{Random number that determines transmission time.}
-
-\item{bn_weight}{Penalisation term for transmitting multiple lineages.}
 }
 \description{
 Proposal to add a transmission

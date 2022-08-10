@@ -7,10 +7,16 @@
 #' @param bn_weight Penalisation term for transmitting multiple lineages.
 #'
 #' @export
-add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
+add_transmission <- function(ctree, bn_weight = 0.1) {
 
+  # Extract ctree
   nam <- ctree$nam
   ctree <- ctree$ctree
+
+  # Random numbers for sampling
+  host <- sample(1:max(ctree[, 4]), size = 1)
+  u1 <- runif(1)
+  u2 <- runif(1)
 
   # Rows for transmission or observations in host
   leaves <- which(ctree[, 3] == 0 & ctree[, 4] == host)
@@ -71,6 +77,7 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
     l1 <- which(active[r, ] == 1)
     l2 <- which(active[r, ] == 0)
 
+    # Ensure samples of the same host are assigned to one host
     if (length(host2[l1[which(type[l1] == 1)]]) > 0 & length(host2[l2[which(type[l2] == 1)]]) > 0) {
 
       if (any(host2[l1[which(type[l1] == 1)]] %in% host2[l2[which(type[l2] == 1)]])) {
@@ -81,7 +88,7 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
 
     }
 
-
+    # Ensure transmitted lineages to the same host have a single infector
     if (length(host2[l1[which(type[l1] == 2)]]) > 0 & length(host2[l2[which(type[l2] == 2)]]) > 0) {
 
       if (any(host2[l1[which(type[l1] == 2)]] %in% host2[l2[which(type[l2] == 2)]])) {
@@ -114,6 +121,7 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
 
       for (c in 1:dim(combs)[2]) {
 
+        # Included branches and leaves in this combination
         inc_branches <- combs[, c]
         inc_active <- apply(active[inc_branches,], 2, max)
 
@@ -121,6 +129,7 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
         leaves_1 <- which(inc_active == 1)
         leaves_2 <- which(inc_active == 0)
 
+        # Ensure samples of the same host are assigned to one host
         if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
 
           if (any(host2[leaves_1[which(type[leaves_1] == 1)]] %in% host2[leaves_2[which(type[leaves_2] == 1)]])) {
@@ -131,6 +140,7 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
 
         }
 
+        # Ensure transmitted lineages to the same host have a single infector
         if (length(host2[leaves_1[which(type[leaves_1] == 2)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 2)]]) > 0) {
 
           if (any(host2[leaves_1[which(type[leaves_1] == 2)]] %in% host2[leaves_2[which(type[leaves_2] == 2)]])) {
@@ -141,6 +151,7 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
 
         }
 
+        # Unique identifier for combination
         inc_bin <- sum(inc_active * 2^(0:(L - 1)))
 
         # Define interval over which combinations can occur
@@ -150,11 +161,13 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
         # Update lengths
         if (high > low) {
 
+          # If combination already has weight
           if (inc_bin %in% bin_ex) {
 
             k <- which(bin_ex == inc_bin)
             len_ex[k] <- len_ex[k] + (bn_weight ^ (r - 1)) * (high - low)
 
+          # If first time combination has occurred
           } else {
 
             active_ex <- rbind(active_ex, inc_active)
@@ -171,11 +184,12 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
 
   }
 
+  # Normalise lengths (weights)
   sum_len <- sum(len_ex)
   norm_len <- len_ex / sum_len
 
 
-  # Sample transmissions
+  # Sample combination
   v <- 1
   s <- norm_len[v]
 
@@ -236,7 +250,7 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
 
       }
 
-      # If correct transmissions are formed, sample time
+      # If correct transmission tree topology is formed, sample time
       inc_bin <- sum(inc_active * 2^(0:(L - 1)))
 
       low <- max(interval[inc_branches, 1])
@@ -335,6 +349,7 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
 
   }
 
+  # Order hosts
   ctree <- order_hosts(ctree)
 
   new_ctree <- list(ctree = ctree, nam = nam)
@@ -352,26 +367,32 @@ add_transmission <- function(ctree, host, u1, u2, bn_weight = 0.1) {
 #' @export
 remove_transmission <- function(ctree) {
 
+  # Extract ctree
   nam <- ctree$nam
   ctree <- ctree$ctree
 
+  # Sample rows and host
   obs_idx <- which(ctree[, 2] == 0 & ctree[, 3] == 0)
   obs_host <- ctree[obs_idx, 4]
 
+  # Transmission rows and hosts
   tr_idx <- which(ctree[, 2] > 0 & ctree[, 3] == 0)
-
   tr_host1 <- ctree[tr_idx, 4]
   tr_host2 <- ctree[ctree[tr_idx, 2], 4]
 
+  # Exclude transmissions between sampled hosts and root transmission
   tr_idx <- tr_idx[!((tr_host1 %in% obs_host) & (tr_host2 %in% obs_host)) & tr_host1 != 0]
 
+  # Sample transmission and corresponding ctree row
   sam_tr <- sample(1:length(tr_idx), size = 1)
   sam_ct <- tr_idx[sam_tr]
 
+  # Sampled transmission information
   sam_time <- ctree[sam_ct, 1]
   sam_host1 <- ctree[sam_ct, 4]
   sam_host2 <- ctree[ctree[sam_ct, 2], 4]
 
+  # All ctree rows associated with transmission
   sam_tr_ex <- which(ctree[tr_idx, 1] == sam_time &
                        ctree[tr_idx, 3] == 0 &
                        ctree[tr_idx, 4] == sam_host1 &
@@ -379,6 +400,7 @@ remove_transmission <- function(ctree) {
 
   sam_ct_ex <- tr_idx[sam_tr_ex]
 
+  # Remove infected host
   ctree[which(ctree[, 4] == sam_host2), 4] <- sam_host1
 
   for (r in 1:length(sam_ct_ex)) {
@@ -409,9 +431,11 @@ remove_transmission <- function(ctree) {
 
   ctree <- ctree[-sam_ct_ex, ]
 
+  # Update host numbers
   ctree[, 4][which(ctree[, 4] > sam_host2)] <-
     ctree[, 4][which(ctree[, 4] > sam_host2)] - 1
 
+  # Order hosts
   ctree <- order_hosts(ctree)
 
   new_ctree <- list(ctree = ctree, nam = nam)
@@ -480,7 +504,6 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
     sam_ct_ex <- tr_idx[sam_tr_ex]
 
     # Hosts before removal
-#    prv_host <- ctree[which(ctree[, 4] == sam_host2), 4]
     prv_host <- ctree[, 4]
 
     # Replace removed host in ctree
@@ -526,10 +549,6 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
     # Event type (observation = 1, transmission = 2) for each leaf
     type <- 1 * (ctree[leaves, 2] == 0 & ctree[leaves, 3] == 0) +
       2 * (ctree[leaves, 2] > 0 & ctree[leaves, 3] == 0)
-
-    # Corresponding host to type (sampled or infected individual)
-    #  host2 <- ctree[leaves, 4]
-    #  host2 <- rep(host, length(leaves))
 
     # Corresponding host to type (sampled or infected individual)
     host2 <- prv_host[leaves]
@@ -581,6 +600,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
       l1 <- which(active[r, ] == 1)
       l2 <- which(active[r, ] == 0)
 
+      # Ensure samples of the same host are assigned to one host
       if (length(host2[l1[which(type[l1] == 1)]]) > 0 & length(host2[l2[which(type[l2] == 1)]]) > 0) {
 
         if (any(host2[l1[which(type[l1] == 1)]] %in% host2[l2[which(type[l2] == 1)]])) {
@@ -591,6 +611,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
       }
 
+      # Ensure transmitted lineages to the same host have a single infector
       if (length(host2[l1[which(type[l1] == 2)]]) > 0 & length(host2[l2[which(type[l2] == 2)]]) > 0) {
 
         if (any(host2[l1[which(type[l1] == 2)]] %in% host2[l2[which(type[l2] == 2)]])) {
@@ -601,6 +622,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
       }
 
+      # Ensure samples from different hosts are not assigned to a single host
       if (length(host2[l1[which(type[l1] == 1)]]) > 0) {
 
         if (length(unique(host2[l1[which(type[l1] == 1)]])) > 1) {
@@ -650,6 +672,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
           leaves_1 <- which(inc_active == 1)
           leaves_2 <- which(inc_active == 0)
 
+          # Ensure samples of the same host are assigned to one host
           if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
 
             if (any(host2[leaves_1[which(type[leaves_1] == 1)]] %in% host2[leaves_2[which(type[leaves_2] == 1)]])) {
@@ -660,6 +683,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
           }
 
+          # Ensure transmitted lineages to the same host have a single infector
           if (length(host2[leaves_1[which(type[leaves_1] == 2)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 2)]]) > 0) {
 
             if (any(host2[leaves_1[which(type[leaves_1] == 2)]] %in% host2[leaves_2[which(type[leaves_2] == 2)]])) {
@@ -670,6 +694,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
           }
 
+          # Ensure samples from different hosts are not assigned to a single host
           if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0) {
 
             if (length(unique(host2[leaves_1[which(type[leaves_1] == 1)]])) > 1) {
@@ -766,6 +791,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
         leaves_1 <- which(inc_active == 1)
         leaves_2 <- which(inc_active == 0)
 
+        # Ensure samples of the same host are assigned to one host
         if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
 
           if (any(host2[leaves_1[which(type[leaves_1] == 1)]] %in% host2[leaves_2[which(type[leaves_2] == 1)]])) {
@@ -776,6 +802,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
         }
 
+        # Ensure transmitted lineages to the same host have a single infector
         if (length(host2[leaves_1[which(type[leaves_1] == 2)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 2)]]) > 0) {
 
           if (any(host2[leaves_1[which(type[leaves_1] == 2)]] %in% host2[leaves_2[which(type[leaves_2] == 2)]])) {
@@ -786,6 +813,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
         }
 
+        # Ensure samples from different hosts are not assigned to a single host
         if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0) {
 
           if (length(unique(host2[leaves_1[which(type[leaves_1] == 1)]])) > 1) {
@@ -840,9 +868,6 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
     }
 
     # Update ctree
-    #old_host <- host
-    #new_host <- host + 1
-
     rhl <- rows_host[inc_branches]
 
     repeat {
