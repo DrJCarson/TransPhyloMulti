@@ -83,52 +83,52 @@ num_approx_disc <- function(grid,
 #'
 #' @export
 sim_ongoing <- function(off.r = 1,
-                          off.p = 0.5,
-                          lm_const = 0.2,
-                          lm_rate = 0.2,
-                          pi = 0.5,
-                          add.prob = 0.1,
-                          add.sep = 14 / 365,
-                          w.shape = 2,
-                          w.scale = 1,
-                          ws.shape = NA,
-                          ws.scale = NA,
-                          w.mean = NA,
-                          w.std = NA,
-                          ws.mean = NA,
-                          ws.std = NA,
-                          dateStartOutbreak = 2000,
-                          dateS = NA,
-                          dateT = 2010,
-                          delta = 1 / 365) {
+                        off.p = 0.5,
+                        lm_const = 0.2,
+                        lm_rate = 0.2,
+                        pi = 0.5,
+                        add.prob = 0.1,
+                        add.sep = 14 / 365,
+                        w.shape = 2,
+                        w.scale = 1,
+                        ws.shape = NULL,
+                        ws.scale = NULL,
+                        w.mean = NULL,
+                        w.std = NULL,
+                        ws.mean = NULL,
+                        ws.std = NULL,
+                        dateStartOutbreak = 2000,
+                        dateS = NULL,
+                        dateT = 2010,
+                        delta = 1 / 365) {
 
-  if (!is.na(w.mean) && !is.na(w.std)) {
+  if (!is.null(w.mean) && !is.null(w.std)) {
 
-    w.shape = w.mean ^ 2 / w.std ^ 2
-    w.scale = w.std ^ 2 / w.mean
-
-  }
-
-  if (!is.na(ws.mean) && !is.na(ws.std)) {
-
-    ws.shape = ws.mean ^ 2 / ws.std ^ 2
-    ws.scale = ws.std ^ 2 / ws.mean
+    w.shape <- w.mean ^ 2 / w.std ^ 2
+    w.scale <- w.std ^ 2 / w.mean
 
   }
 
-  if (is.na(ws.shape)) {
+  if (!is.null(ws.mean) && !is.null(ws.std)) {
 
-    ws.shape = w.shape
-
-  }
-
-  if (is.na(ws.scale)) {
-
-    ws.scale = w.scale
+    ws.shape <- ws.mean ^ 2 / ws.std ^ 2
+    ws.scale <- ws.std ^ 2 / ws.mean
 
   }
 
-  if (is.na(dateS)) {
+  if (is.null(ws.shape)) {
+
+    ws.shape <- w.shape
+
+  }
+
+  if (is.null(ws.scale)) {
+
+    ws.scale <- w.scale
+
+  }
+
+  if (is.null(dateS)) {
 
     dateS <- dateStartOutbreak
 
@@ -145,134 +145,142 @@ sim_ongoing <- function(off.r = 1,
   pit <- fn_list$pit
   gamma_prob <- fn_list$gamma_prob
 
-  ttree <- matrix(0,1,3)
-
-  i <- 1
-  n <- 1
-  t_inf <- dateStartOutbreak
-
-  ttree[i, 1] <- t_inf
-
   repeat {
 
-    tidx <- 1 + round((dateT - t_inf) / delta)
+    ttree <- matrix(0,1,3)
 
-    if (runif(1) < (pit[tidx] / (1 - omega[tidx]))) {
+    i <- 1
+    n <- 1
+    t_inf <- dateStartOutbreak
 
-      ttree[i, 2] <- 1
-
-    } else {
-
-      ttree[i, 2] <- NA
-
-    }
+    ttree[i, 1] <- t_inf
 
     repeat {
 
-      offspring <- rnbinom(1, size = off.r, prob = off.p)
+      tidx <- 1 + round((dateT - t_inf) / delta)
 
-      if (offspring > 0) {
+      if (runif(1) < (pit[tidx] / (1 - omega[tidx]))) {
 
-        offspring_inc <- rbinom(1, size = offspring, prob = 1 - omega_bar[tidx])
+        ttree[i, 2] <- 1
 
       } else {
 
-        offspring_inc <- 0
+        ttree[i, 2] <- NA
 
       }
 
+      repeat {
 
-      if (!is.na(ttree[i, 2]) | offspring_inc > 0) {
+        offspring <- rnbinom(1, size = off.r, prob = off.p)
+
+        if (offspring > 0) {
+
+          offspring_inc <- rbinom(1, size = offspring, prob = 1 - omega_bar[tidx])
+
+        } else {
+
+          offspring_inc <- 0
+
+        }
+
+
+        if (!is.na(ttree[i, 2]) | offspring_inc > 0) {
+
+          break
+
+        }
+
+      }
+
+      if (offspring_inc > 0) {
+
+        ttree <- rbind(ttree, matrix(0, offspring_inc, 3))
+
+        gent <- (gamma_prob[tidx:2] * (1 - omega[1:(tidx - 1)])) / (1 - omega_bar[tidx])
+
+        gent_sam <- sample(1:(tidx - 1), size = offspring_inc, prob = gent, replace = T)
+
+        ttree[n + 1:offspring_inc, 1] <- grid[gent_sam]
+        ttree[n + 1:offspring_inc, 3] <- i
+
+        n <- n + offspring_inc
+
+      }
+
+      i <- i + 1
+
+      if (i > nrow(ttree)) {
 
         break
 
+      } else {
+
+        t_inf <- ttree[i, 1]
+
       }
 
     }
 
-    if (offspring_inc > 0) {
+    ord <- c(which(!is.na(ttree[,2])), which(is.na(ttree[,2])))
+    invord = 1:length(ord)
+    invord[ord] = 1:length(ord)
+    ttree<-ttree[ord, , drop=FALSE]
+    ttree[ttree[, 3] > 0, 3] = invord[ttree[ttree[, 3] > 0, 3]]
 
-      ttree <- rbind(ttree, matrix(0, offspring_inc, 3))
+    obs <- matrix(0, 0, 2)
 
-      gent <- (gamma_prob[tidx:2] * (1 - omega[1:(tidx - 1)])) / (1 - omega_bar[tidx])
+    for (h in which(ttree[, 2] == 1)) {
 
-      gent_sam <- sample(1:(tidx - 1), size = offspring_inc, prob = gent, replace = T)
+      t_inf <- ttree[h, 1]
 
-      ttree[n + 1:offspring_inc, 1] <- grid[gent_sam]
-      ttree[n + 1:offspring_inc, 3] <- i
+      repeat {
 
-      n <- n + offspring_inc
+        t_sam <- t_inf + rgamma(1, shape = ws.shape, scale = ws.scale)
+
+        if (t_sam > dateS & t_sam < dateT) {
+
+          break
+
+        }
+
+      }
+
+      obs <- rbind(obs, c(t_sam, h))
+
+      repeat {
+
+        if ((t_sam + add.sep) < dateT & runif(1) < add.prob) {
+
+          t_sam <- t_sam + add.sep
+
+          obs <- rbind(obs, c(t_sam, h))
+
+        } else {
+
+          break
+
+        }
+
+      }
 
     }
 
-    i <- i + 1
+    obs_df <- data.frame(time = obs[, 1], individual = obs[, 2])
+    tr_df <- data.frame(time = ttree[, 1], infector = ttree[, 3], infected = 1:length(ttree[, 1]))
+    ige_out <- sample_phylo_conditioned(observations = obs_df,
+                                        transmissions = tr_df,
+                                        growth_model = "linear",
+                                        lm_const = lm_const,
+                                        lm_rate = lm_rate,
+                                        show_plot = F)
 
-    if (i > nrow(ttree)) {
+    if (length(which(is.na(ige_out$nodes$ancestor))) == 1) {
 
       break
 
-    } else {
-
-      t_inf <- ttree[i, 1]
-
     }
 
   }
-
-  ttree2 <- ttree
-
-  ord <- c(which(!is.na(ttree[,2])), which(is.na(ttree[,2])))
-  invord = 1:length(ord)
-  invord[ord] = 1:length(ord)
-  ttree<-ttree[ord, , drop=FALSE]
-  ttree[ttree[, 3] > 0, 3] = invord[ttree[ttree[, 3] > 0, 3]]
-
-  obs <- matrix(0, 0, 2)
-
-  for (h in which(ttree[, 2] == 1)) {
-
-    t_inf <- ttree[h, 1]
-
-    repeat {
-
-      t_sam <- t_inf + rgamma(1, shape = ws.shape, scale = ws.scale)
-
-      if (t_sam > dateS & t_sam < dateT) {
-
-        break
-
-      }
-
-    }
-
-    obs <- rbind(obs, c(t_sam, h))
-
-    repeat {
-
-      if ((t_sam + add.sep) < dateT & runif(1) < add.prob) {
-
-        t_sam <- t_sam + add.sep
-
-        obs <- rbind(obs, c(t_sam, h))
-
-      } else {
-
-        break
-
-      }
-
-    }
-
-  }
-
-  obs_df <- data.frame(time = obs[, 1], individual = obs[, 2])
-  tr_df <- data.frame(time = ttree[, 1], infector = ttree[, 3], infected = 1:length(ttree[, 1]))
-  ige_out <- sample_phylo_conditioned(observations = obs_df,
-                                      transmissions = tr_df,
-                                      growth_model = "linear",
-                                      lm_const = lm_const,
-                                      lm_rate = lm_rate,
-                                      show_plot = F)
 
   sams <- length(obs[, 1])
 
@@ -280,24 +288,27 @@ sim_ongoing <- function(off.r = 1,
   ctree[, 1] <- obs[, 1]
   ctree[, 4] <- obs[, 2]
 
-  ctree <- rbind(ctree, matrix(0, sams - 1, 4))
+  if (sams > 1) {
 
-  for (r in (sams + 1):(2 * sams - 1)) {
+    ctree <- rbind(ctree, matrix(0, sams - 1, 4))
 
-    ctree[r, ] <- c(ige_out$nodes$time[r],
-                    which(ige_out$nodes$ancestor == r),
-                    ige_out$nodes$individual[r])
+    for (r in (sams + 1):(2 * sams - 1)) {
+
+      ctree[r, ] <- c(ige_out$nodes$time[r],
+                      which(ige_out$nodes$ancestor == r),
+                      ige_out$nodes$individual[r])
+
+    }
+
+    ord <- c(1:sams, sams + order(ctree[(sams + 1):(2 * sams - 1), 1], decreasing = T))
+    invord = 1:length(ord)
+    invord[ord] = 1:length(ord)
+
+    ctree[, ] <- ctree[ord, ]
+    ctree[which(ctree[, 2] > 0), 2] <- invord[ctree[which(ctree[, 2] > 0), 2]]
+    ctree[which(ctree[, 3] > 0), 3] <- invord[ctree[which(ctree[, 3] > 0), 3]]
 
   }
-
-  ord <- c(1:sams, sams + order(ctree[(sams + 1):(2 * sams - 1), 1], decreasing = T))
-  invord = 1:length(ord)
-  invord[ord] = 1:length(ord)
-
-  ctree[, ] <- ctree[ord, ]
-  ctree[which(ctree[, 2] > 0), 2] <- invord[ctree[which(ctree[, 2] > 0), 2]]
-  ctree[which(ctree[, 3] > 0), 3] <- invord[ctree[which(ctree[, 3] > 0), 3]]
-
 
   i <- 1
   j <- length(ctree[, 1]) + 1
@@ -314,7 +325,7 @@ sim_ongoing <- function(off.r = 1,
         ctree <- rbind(ctree, rep(0, 4))
 
         ctree[j, ] <- c(ttree[ti, 1], i, 0, ttree[ti, 3])
-        ctree[r, which(ctree[r, 2:3] == i) + 1] <- j
+#        ctree[r, which(ctree[r, 2:3] == i) + 1] <- j
 
         j <- j + 1
 
