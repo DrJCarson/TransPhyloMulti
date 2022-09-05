@@ -365,7 +365,20 @@ sim_ongoing <- function(off.r = 1,
   ctree[which(ctree[, 2] > 0), 2] <- invord[ctree[which(ctree[, 2] > 0), 2]]
   ctree[which(ctree[, 3] > 0), 3] <- invord[ctree[which(ctree[, 3] > 0), 3]]
 
-  out <- list(ctree = ctree, nam = ctree[1:sams, 4])
+  nam_host <- ctree[1:sams, 4]
+  nam_num <- integer(sams)
+
+  host_count <- integer(length(unique(nam_host)))
+
+  for (i in 1:sams) {
+
+    host_count[nam_host[i]] <- host_count[nam_host[i]] + 1
+
+    nam_num[i] <- host_count[nam_host[i]]
+
+  }
+
+  out <- list(ctree = ctree, nam = paste(nam_host, ".", nam_num, sep = ""))
   class(out) <- 'ctree'
 
   return(out)
