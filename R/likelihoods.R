@@ -1,3 +1,19 @@
+#' Calculate transmission tree likelihood
+#'
+#' @param ttree Transmission tree.
+#' @param off.r Shape parameter for the number of offspring.
+#' @param off.p Probability parameter for the number of offspring.
+#' @param pi Probability of host being sampled.
+#' @param w.shape Shape parameter of generation time distribution.
+#' @param w.scale Scale parameter of generation time distribution.
+#' @param ws.shape Shape parameter of primary sampling time distribution.
+#' @param ws.scale Scale parameter of primary sampling time distribution.
+#' @param dateStartOutbreak Outbreak start date.
+#' @param dateS Start time of outbreak sampling.
+#' @param dateT Stop time of outbreak sampling.
+#' @param delta Discrete time step.
+#'
+#' @export
 log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
                           ws.scale, dateS, dateT, delta = 1 / 365) {
 
@@ -60,6 +76,120 @@ log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
         log_lik <- log_lik + dgamma(ttree[inf_host, 1] - ttree[i, 1], shape = w.shape, scale = w.scale, log = T)
 
       }
+
+    }
+
+  }
+
+  return(log_lik)
+
+}
+
+
+#' Likelihood evaluation for the linear growth model
+#'
+#' @param infected_time Time at which individual was infected.
+#' @param final_time Lower bound of time period.
+#' @param start_time Upper bound of time period.
+#' @param lm_const Initial population vale.
+#' @param lm_rate Growth rate.
+#' @param branch_combs Number of possible coalescence possibilities.
+#' @param coalescence Whether or not a coalescence occurs at final_time.
+#'
+#' @export
+log_likelihood_coalescence_linear <- function(infected_time, final_time,
+                                              start_time, lm_const, lm_rate,
+                                              branch_combs, coalescence) {
+
+  if (coalescence == 1) {
+
+    log_likelihood_increment <- - log(lm_rate * (final_time -
+                                                   infected_time) + lm_const) -
+      (branch_combs / lm_rate) * (log(lm_rate *
+                                       (start_time - infected_time) +
+                                       lm_const) - log(lm_rate * (final_time -
+                                                                    infected_time) + lm_const))
+
+  } else {
+
+    if (branch_combs > 0) {
+
+      log_likelihood_increment <- - (branch_combs / lm_rate) * (log(lm_rate *
+                                                                     (start_time - infected_time) +
+                                                                     lm_const) - log(lm_rate * (final_time -
+                                                                                                  infected_time) + lm_const))
+
+    } else {
+
+      log_likelihood_increment <- 0
+
+    }
+
+  }
+
+  return(log_likelihood_increment)
+
+}
+
+#' Likelihood evaluation for a phylogenetic tree conditional on a transmission tree
+#'
+#' @param ctree Combined tree.
+#' @param lm_const Initial pathogen population.
+#' @param lm_rate Pathogen growth rate
+#'
+#' @export
+log_lik_ptree_given_ctree <- function(ctree, lm_const, lm_rate) {
+
+  log_lik <- 0
+
+  ctree <- sim$ctree
+
+  for (host in 1:max(ctree[, 4])) {
+
+    host_rows <- which(ctree[, 4] == host)
+    host_rows <- host_rows[order(ctree[host_rows, 1], decreasing = T)]
+
+    inf_time <- ctree[which(ctree[, 2] == max(host_rows))[1], 1]
+
+    lineages <- 0
+
+    for (i in 1:length(host_rows)) {
+
+      if (ctree[host_rows[i], 3] == 0) { # leaf
+
+        lineages <- lineages + 1
+
+      } else {
+
+        lineages <- lineages - 1
+
+      }
+
+      t1 <- ctree[host_rows[i], 1]
+
+      if (i < length(host_rows)) {
+
+        t2 <- ctree[host_rows[i + 1], 1]
+
+        if (ctree[host_rows[i + 1], 3] == 0) {
+
+          is_coa <- 0
+
+        } else {
+
+          is_coa <- 1
+
+        }
+
+      } else{
+
+        t2 <- inf_time
+
+        is_coa <- 0
+
+      }
+
+      log_lik <- log_lik + log_likelihood_coalescence_linear(inf_time, t1, t2, lm_const, lm_rate, choose(lineages, 2), is_coa)
 
     }
 
