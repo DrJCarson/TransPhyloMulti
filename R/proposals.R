@@ -18,6 +18,8 @@ add_transmission <- function(ctree, bn_weight = 0.1) {
   u1 <- runif(1)
   u2 <- runif(1)
 
+  prop_density <- log(1 / max(ctree[, 4]))
+
   # Rows for transmission or observations in host
   leaves <- which(ctree[, 3] == 0 & ctree[, 4] == host)
   L <- length(leaves)
@@ -200,8 +202,12 @@ add_transmission <- function(ctree, bn_weight = 0.1) {
 
   }
 
+  prop_density <- prop_density + log(norm_len[v])
+
   tar_bin <- bin_ex[v]
   tar_len <- len_ex[v]
+
+  prop_density <- prop_density + log(1 / tar_len)
 
   # Sample transmission time
   u2l <- u2 * tar_len
@@ -355,7 +361,7 @@ add_transmission <- function(ctree, bn_weight = 0.1) {
   new_ctree <- list(ctree = ctree, nam = nam)
   class(new_ctree) <- 'ctree'
 
-  return(new_ctree)
+  return(list(ctree = new_ctree, prop_density = prop_density))
 
 }
 
@@ -400,6 +406,8 @@ remove_transmission <- function(ctree) {
 
   sam_ct_ex <- tr_idx[sam_tr_ex]
 
+  prop_density <- log(length(sam_tr_ex) / length(tr_idx))
+
   # Remove infected host
   ctree[which(ctree[, 4] == sam_host2), 4] <- sam_host1
 
@@ -441,7 +449,7 @@ remove_transmission <- function(ctree) {
   new_ctree <- list(ctree = ctree, nam = nam)
   class(new_ctree) <- 'ctree'
 
-  return(new_ctree)
+  return(list(ctree = new_ctree, prop_density = prop_density))
 
 }
 
@@ -490,6 +498,8 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     }
 
+    prop_density <- log(1 / length(tr_idx))
+
   # Remove transmission and replace it
   } else {
 
@@ -502,6 +512,8 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
                          ctree[ctree[tr_idx, 2], 4] == sam_host2)
 
     sam_ct_ex <- tr_idx[sam_tr_ex]
+
+    prop_density <- log(length(sam_tr_ex) / length(tr_idx))
 
     # Hosts before removal
     prv_host <- ctree[, 4]
@@ -761,8 +773,12 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     }
 
+    prop_density <- prop_density + log(norm_len[v])
+
     tar_bin <- bin_ex[v]
     tar_len <- len_ex[v]
+
+    prop_density <- prop_density + log(1 / tar_len)
 
     # Sample transmission time
     u2l <- u2 * tar_len
@@ -930,6 +946,6 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
   new_ctree <- list(ctree = ctree, nam = nam)
   class(new_ctree) <- 'ctree'
 
-  return(new_ctree)
+  return(list(ctree = new_ctree, prop_density = prop_density))
 
 }
