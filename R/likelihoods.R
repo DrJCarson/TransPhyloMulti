@@ -59,7 +59,7 @@ log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
 
     alpha_sum <- sum(dnbinom(inc_off:sum_lim, size = off.r, prob = off.p) *
                        choose(inc_off:sum_lim, inc_off) *
-                       omega_bar[t_idx] ^ (0:(sum_lim - inc_off)))
+                       omega_bar[tidx] ^ (0:(sum_lim - inc_off)))
 
     log_lik <- log_lik + log(alpha_sum)
 
