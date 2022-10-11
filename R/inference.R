@@ -334,7 +334,7 @@ infereTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scal
 
   }#End of main MCMC loop
 
-  class(record)<-'resTransPhylo'
+  class(record)<-'resTransPhyloM'
   return(record)
 
 }

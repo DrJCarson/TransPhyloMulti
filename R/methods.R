@@ -35,7 +35,7 @@ print.ttreem <- function(x, ...) {
 #' @param ... Additional parameters are passed on to ape::plot.phylo
 #' @return Plot of ptreem
 #' @export
-plot.ptreem = function(x, ...) {
+plot.ptreem <- function(x, ...) {
 
   stopifnot(inherits(x, "ptreem"))
 
@@ -53,7 +53,7 @@ plot.ptreem = function(x, ...) {
 #' @param w.scale Scale parameter of the generation time, needed for detailed plot only
 #' @param ... Additional parameters are passed on
 #' @export
-plot.ttreem = function(x, type='summarised', w.shape=NA, w.scale=NA, ...) {
+plot.ttreem <- function(x, type='summarised', w.shape=NA, w.scale=NA, ...) {
 
   stopifnot(inherits(x, "ttreem"))
 
@@ -76,3 +76,17 @@ plot.ttreem = function(x, type='summarised', w.shape=NA, w.scale=NA, ...) {
   }
 
 }
+
+#' Plotting for resTransPhylo
+#' @param x Output from inferTTree
+#' @param ... Additional parameters are passed on
+#' @return Plot of TransPhylo results
+#' @export
+plot.resTransPhylo <- function(x, ...) {
+
+  stopifnot(inherits(x, "resTransPhyloM"))
+
+  plotTraces(x)
+
+}
+
