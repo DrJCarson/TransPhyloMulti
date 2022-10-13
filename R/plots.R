@@ -190,7 +190,7 @@ plotTTree_det = function(ttree, w.shape, w.scale, showLabels = TRUE, maxTime = N
 #' @param extend Whether to also show traces of off.r and off.p
 #' @return Returns invisibly the first parameter
 #' @export
-plotTraces <- function(record, burnin = 0) {
+plotTracesM <- function(record, burnin = 0) {
 
   oldpar <- par(no.readonly = TRUE)
   on.exit(par(oldpar))

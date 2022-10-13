@@ -1,4 +1,38 @@
-infereTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale = NA,
+#' Infer transmission tree given a phylogenetic tree
+#' @param ptree Phylogenetic tree
+#' @param w.shape Shape parameter of the Gamma distribution representing the generation time
+#' @param w.scale Scale parameter of the Gamma distribution representing the generation time
+#' @param ws.shape Shape parameter of the Gamma distribution representing the sampling time
+#' @param ws.scale Scale parameter of the Gamma distribution representing the sampling time
+#' @param w.mean Mean of the Gamma distribution representing the generation time
+#' @param w.std Std of the Gamma distribution representing the generation time
+#' @param ws.mean Mean of the Gamma distribution representing the sampling time
+#' @param ws.std Std of the Gamma distribution representing the sampling time
+#' @param mcmcIterations Number of MCMC iterations to run the algorithm for
+#' @param thinning MCMC thinning interval between two sampled iterations
+#' @param start_const Starting value of within-host population size
+#' @param start_rate Starting value for the within-host population growth rate
+#' @param startOff.r Starting value of parameter off.r
+#' @param startOff.p Starting value of parameter off.p
+#' @param startPi Starting value of sampling proportion pi
+#' @param updateconst Whether of not to update the parameter lm_const
+#' @param updaterate Whether of not to update the parameter lm_rate
+#' @param updateOff.r Whether or not to update the parameter off.r
+#' @param updateOff.p Whether or not to update the parameter off.p
+#' @param updatePi Whether or not to update the parameter pi
+#' @param qconst Proposal kernel range for parameter lm_const
+#' @param qrate Proposal kernel range for parameter lm_rate
+#' @param qOff.r Proposal kernel range for parameter Off.r
+#' @param qOff.p Proposal kernel range for parameter Off.p
+#' @param qPi Proposal kernel range for parameter pi
+#' @param startCTree Optional combined tree to start from
+#' @param updateTTree Whether or not to update the transmission tree
+#' @param dateS Date when observations start
+#' @param dateT Date when process stops (this can be Inf for fully simulated outbreaks)
+#' @param delta Grid precision (smaller is better but slower)
+#' @param verbose Whether or not to use verbose mode (default is false)
+#' @export
+inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale = NA,
                          w.mean = NA, w.std = NA, ws.mean = NA, ws.std = NA, mcmcIterations = 1000,
                          thinning = 1, start_const = 2, start_rate = 2, startOff.r = 1, startOff.p = 0.5,
                          startPi = 0.5, updateconst = TRUE, updaterate = TRUE, updateOff.r = TRUE, updateOff.p = FALSE,
@@ -59,21 +93,15 @@ infereTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scal
 
   }
 
-  if (is.na(delta_t)) {
-
-    delta_t <- 0.001 * (max(ptree$ptree[, 1]) - min(ptree$ptree[, 1]))
-
-  }
-
   if (is.na(qconst)) {
 
-    qNeg <- 0.1
+    qconst <- 0.1
 
   }
 
   if (is.na(qrate)) {
 
-    qNeg <- 0.1
+    qrate <- 0.1
 
   }
 
@@ -111,7 +139,7 @@ infereTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scal
 
   }
 
-  ttree <- extractTTree(ctree)
+  ttree <- extractTTreeM(ctree)
 
   record <- vector('list', mcmcIterations / thinning)
 
@@ -219,9 +247,9 @@ infereTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scal
 
       }
 
-      pPTree2 <- log_lik_ptree_given_ctree(ctree2, lm_const2, lm_rate)
+      pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const2, lm_rate)
 
-      if (log(runif(1)) < (pPtree2 - pPtree - lm_const2 + lm_const)) {
+      if (log(runif(1)) < (pPTree2 - pPTree - lm_const2 + lm_const)) {
 
         lm_const <- lm_const2
         pPtree <- pPTree2
@@ -240,9 +268,9 @@ infereTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scal
 
       }
 
-      pPTree2 <- log_lik_ptree_given_ctree(ctree2, lm_const, lm_rate2)
+      pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate2)
 
-      if (log(runif(1)) < (pPtree2 - pPtree - lm_rate2 + lm_rate)) {
+      if (log(runif(1)) < (pPTree2 - pPTree - lm_rate2 + lm_rate)) {
 
         lm_rate <- lm_rate2
         pPtree <- pPTree2
@@ -262,7 +290,7 @@ infereTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scal
 
       }
 
-      pTTree2 <- log_lik_ttree(ttree2, off.r2, off.p, pi, w.shape, w.scale, ws.shape,
+      pTTree2 <- log_lik_ttree(ttree, off.r2, off.p, pi, w.shape, w.scale, ws.shape,
                                ws.scale, dateS, dateT, delta)
 
       if (log(runif(1)) < (pTTree2 - pTTree - off.r2 + off.r)) {
@@ -291,7 +319,7 @@ infereTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scal
 
       }
 
-      pTTree2 <- log_lik_ttree(ttree2, off.r, off.p2, pi, w.shape, w.scale, ws.shape,
+      pTTree2 <- log_lik_ttree(ttree, off.r, off.p2, pi, w.shape, w.scale, ws.shape,
                                ws.scale, dateS, dateT, delta)
 
       if (log(runif(1)) < (pTTree2 - pTTree)) {
@@ -320,7 +348,7 @@ infereTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scal
 
       }
 
-      pTTree2 <- log_lik_ttree(ttree2, off.r, off.p, pi2, w.shape, w.scale, ws.shape,
+      pTTree2 <- log_lik_ttree(ttree, off.r, off.p, pi2, w.shape, w.scale, ws.shape,
                                ws.scale, dateS, dateT, delta)
 
       if (log(runif(1)) < (pTTree2 - pTTree)) {

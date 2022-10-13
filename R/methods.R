@@ -82,11 +82,11 @@ plot.ttreem <- function(x, type='summarised', w.shape=NA, w.scale=NA, ...) {
 #' @param ... Additional parameters are passed on
 #' @return Plot of TransPhylo results
 #' @export
-plot.resTransPhylo <- function(x, ...) {
+plot.resTransPhyloM <- function(x, ...) {
 
   stopifnot(inherits(x, "resTransPhyloM"))
 
-  plotTraces(x)
+  plotTracesM(x)
 
 }
 

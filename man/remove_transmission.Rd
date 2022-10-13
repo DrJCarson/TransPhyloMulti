@@ -4,7 +4,7 @@
 \alias{remove_transmission}
 \title{Proposal to remove a transmission}
 \usage{
-remove_transmission(ctree)
+remove_transmission(ctree, bn_weight = 0.1)
 }
 \arguments{
 \item{ctree}{Current coloured tree.}
