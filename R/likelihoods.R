@@ -103,21 +103,19 @@ log_likelihood_coalescence_linear <- function(infected_time, final_time,
 
   if (coalescence == 1) {
 
-    log_likelihood_increment <- - log(lm_rate * (final_time -
-                                                   infected_time) + lm_const) -
-      (branch_combs / lm_rate) * (log(lm_rate *
-                                       (start_time - infected_time) +
-                                       lm_const) - log(lm_rate * (final_time -
-                                                                    infected_time) + lm_const))
+    log_likelihood_increment <- - log(lm_rate * (final_time - infected_time) +
+                                lm_const) - (branch_combs / lm_rate) * (log(
+                                lm_rate * (start_time - infected_time) +
+                                lm_const) - log(lm_rate * (final_time -
+                                infected_time) + lm_const))
 
   } else {
 
     if (branch_combs > 0) {
 
       log_likelihood_increment <- - (branch_combs / lm_rate) * (log(lm_rate *
-                                                                     (start_time - infected_time) +
-                                                                     lm_const) - log(lm_rate * (final_time -
-                                                                                                  infected_time) + lm_const))
+                                (start_time - infected_time) + lm_const) - log(
+                                lm_rate * (final_time - infected_time) + lm_const))
 
     } else {
 
@@ -142,7 +140,7 @@ log_lik_ptree_given_ctree <- function(ctree, lm_const, lm_rate) {
 
   log_lik <- 0
 
-  ctree <- sim$ctree
+  ctree <- ctree$ctree
 
   for (host in 1:max(ctree[, 4])) {
 
@@ -189,7 +187,7 @@ log_lik_ptree_given_ctree <- function(ctree, lm_const, lm_rate) {
 
       }
 
-      log_lik <- log_lik + log_likelihood_coalescence_linear(inf_time, t1, t2, lm_const, lm_rate, choose(lineages, 2), is_coa)
+      log_lik <- log_lik + log_likelihood_coalescence_linear(inf_time, t2, t1, lm_const, lm_rate, choose(lineages, 2), is_coa)
 
     }
 

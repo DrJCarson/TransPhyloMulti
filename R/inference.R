@@ -252,7 +252,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       if (log(runif(1)) < (pPTree2 - pPTree - lm_const2 + lm_const)) {
 
         lm_const <- lm_const2
-        pPtree <- pPTree2
+        pPTree <- pPTree2
 
       }
 
@@ -273,7 +273,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       if (log(runif(1)) < (pPTree2 - pPTree - lm_rate2 + lm_rate)) {
 
         lm_rate <- lm_rate2
-        pPtree <- pPTree2
+        pPTree <- pPTree2
 
       }
 
