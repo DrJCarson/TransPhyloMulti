@@ -44,7 +44,10 @@ num_approx_disc <- function(grid,
 
     omega_bar[g] <- ft[g] + sum(gamma_prob[g:2] * omega[1:(g - 1)])
 
-    phi[g] <- ((1 - off.p) / (1 - off.p * omega_bar[g])) ^ off.r
+#    phi[g] <- ((1 - off.p) / (1 - off.p * omega_bar[g])) ^ off.r
+
+
+    phi[g] <- (off.p / (1 - (1 - off.p) * omega_bar[g])) ^ off.r
 
     omega[g] <- (1 - pit[g]) * phi[g]
 
