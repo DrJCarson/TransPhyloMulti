@@ -465,7 +465,16 @@ remove_transmission <- function(ctree, bn_weight = 0.1) {
 
   rev_density <- log(1 / max(ctree[, 4]))
 
-  host <- sam_host1 - 1
+  if (sam_host1 < sam_host2) {
+
+    host <- sam_host1
+
+  } else {
+
+    host <- sam_host1 - 1
+
+  }
+
 
   # Rows for transmission or observations in host
   leaves <- which(ctree[, 3] == 0 & ctree[, 4] == host)
@@ -642,7 +651,7 @@ remove_transmission <- function(ctree, bn_weight = 0.1) {
 
   rev_density <- rev_density + log(norm_len[v])
 
-  rev_density <- rev_density + log((bn_weight ^ (length(sam_tr_ex) - 1)) / norm_len[v])
+  rev_density <- rev_density + log((bn_weight ^ (length(sam_tr_ex) - 1)) / len_ex[v])
 
   # Order hosts
   ctree <- order_hosts(ctree)
@@ -1092,7 +1101,7 @@ remove_add_local <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     rev_density <- rev_density + log(norm_len[v])
 
-    rev_density <- rev_density + log((bn_weight ^ (length(sam_tr_ex) - 1)) / norm_len[v])
+    rev_density <- rev_density + log((bn_weight ^ (length(sam_tr_ex) - 1)) / len_ex[v])
 
     # Update ctree
     rhl <- rows_host[inc_branches]

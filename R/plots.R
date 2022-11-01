@@ -20,7 +20,7 @@ plotTTree_summ = function(ttree, showLabels = T, maxTime = NA, cex = 1) {
   while (length(todo) > 0) {
 
     f <- which(ttree[, 3] == todo[1])
-    o <- rank(-ttree[f, 1])
+    o <- rank(-ttree[f, 1], ties.method = "first")
     f[o] <- f
 
     for (i in f) {
