@@ -203,35 +203,41 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
       }
 
+
       u <- runif(1)
       if (u < 1 / 3) {
 
-        proptree <- add_transmission(ctree)
+        proptree <- add_transmission_ran(ctree)
 
       } else if (u < 2 / 3) {
 
-        proptree <- remove_transmission(ctree)
+        proptree <- remove_transmission_ran(ctree)
 
       } else {
 
-        proptree <- remove_add_local(ctree)
+        proptree <- remove_add_ran(ctree)
 
       }
 
-      ctree2 <- proptree$ctree
 
-      ttree2 <- extractTTreeM(ctree2)
+      if (proptree$is_valid == 1 & proptree$is_possible == 1) {
 
-      pTTree2 <- log_lik_ttree(ttree2, off.r, off.p, pi, w.shape, w.scale, ws.shape,
-                              ws.scale, dateS, dateT, delta)
-      pPTree2 <- log_lik_ptree_given_ctree(ctree2, lm_const, lm_rate)
+        ctree2 <- proptree$ctree
 
-      if (log(runif(1)) < (pTTree2 + pPTree2 + proptree$prop_density - pTTree - pPTree - proptree$rev_density)) {
+        ttree2 <- extractTTreeM(ctree2)
 
-        ctree <- ctree2
-        ttree <- ttree2
-        pTTree <- pTTree2
-        pPTree <- pPTree2
+        pTTree2 <- log_lik_ttree(ttree2, off.r, off.p, pi, w.shape, w.scale, ws.shape,
+                                ws.scale, dateS, dateT, delta)
+        pPTree2 <- log_lik_ptree_given_ctree(ctree2, lm_const, lm_rate)
+
+        if (log(runif(1)) < (pTTree2 + pPTree2 + proptree$rev_density - pTTree - pPTree - proptree$prop_density)) {
+
+          ctree <- ctree2
+          ttree <- ttree2
+          pTTree <- pTTree2
+          pPTree <- pPTree2
+
+        }
 
       }
 
