@@ -207,20 +207,22 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       u <- runif(1)
       if (u < 1 / 3) {
 
-        proptree <- add_transmission_ran(ctree)
+        proptree <- add_transmission_3(ctree)
 
       } else if (u < 2 / 3) {
 
-        proptree <- remove_transmission_ran(ctree)
+        proptree <- remove_transmission_3(ctree)
 
       } else {
 
-        proptree <- remove_add_ran(ctree)
+        proptree <- remove_add_3(ctree)
 
       }
 
 
-      if (proptree$is_valid == 1 & proptree$is_possible == 1) {
+#      if (proptree$is_valid == 1 & proptree$is_possible == 1) {
+
+      if (proptree$is_possible == 1) {
 
         ctree2 <- proptree$ctree
 
