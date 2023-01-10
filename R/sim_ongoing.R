@@ -225,10 +225,10 @@ sim_ongoing <- function(off.r = 1,
     }
 
     ord <- c(which(!is.na(ttree[,2])), which(is.na(ttree[,2])))
-    invord = 1:length(ord)
-    invord[ord] = 1:length(ord)
-    ttree<-ttree[ord, , drop=FALSE]
-    ttree[ttree[, 3] > 0, 3] = invord[ttree[ttree[, 3] > 0, 3]]
+    invord <- 1:length(ord)
+    invord[ord] <- 1:length(ord)
+    ttree <- ttree[ord, , drop=FALSE]
+    ttree[ttree[, 3] > 0, 3] <- invord[ttree[ttree[, 3] > 0, 3]]
 
     obs <- matrix(0, 0, 2)
 
@@ -268,97 +268,148 @@ sim_ongoing <- function(off.r = 1,
 
     }
 
-    obs_df <- data.frame(time = obs[, 1], individual = obs[, 2])
-    tr_df <- data.frame(time = ttree[, 1], infector = ttree[, 3], infected = 1:length(ttree[, 1]))
-    ige_out <- sample_phylo_conditioned(observations = obs_df,
-                                        transmissions = tr_df,
-                                        growth_model = "linear",
-                                        lm_const = lm_const,
-                                        lm_rate = lm_rate,
-                                        show_plot = F)
 
-    if (length(which(is.na(ige_out$nodes$ancestor))) == 1) {
 
-      break
+    phy_ord <- which(!(1:length(ttree[, 1]) %in% ttree[, 3]))
 
-    }
+    repeat {
 
-  }
+      infectors_inc <- ttree[phy_ord, 3]
+      infectors_exc <- ttree[-phy_ord, 3]
 
-  sams <- length(obs[, 1])
+      phy_ord_new <- unique(infectors_inc[which(!(infectors_inc %in% infectors_exc))])
+      phy_ord_new <- phy_ord_new[which(!(phy_ord_new %in% phy_ord))]
 
-  ctree <- matrix(0, sams, 4)
-  ctree[, 1] <- obs[, 1]
-  ctree[, 4] <- obs[, 2]
+      if (sum(phy_ord_new) == 0) {
 
-  if (sams > 1) {
-
-    ctree <- rbind(ctree, matrix(0, sams - 1, 4))
-
-    for (r in (sams + 1):(2 * sams - 1)) {
-
-      ctree[r, ] <- c(ige_out$nodes$time[r],
-                      which(ige_out$nodes$ancestor == r),
-                      ige_out$nodes$individual[r])
-
-    }
-
-    ord <- c(1:sams, sams + order(ctree[(sams + 1):(2 * sams - 1), 1], decreasing = T))
-    invord = 1:length(ord)
-    invord[ord] = 1:length(ord)
-
-    ctree[, ] <- ctree[ord, ]
-    ctree[which(ctree[, 2] > 0), 2] <- invord[ctree[which(ctree[, 2] > 0), 2]]
-    ctree[which(ctree[, 3] > 0), 3] <- invord[ctree[which(ctree[, 3] > 0), 3]]
-
-  }
-
-  i <- 1
-  j <- length(ctree[, 1]) + 1
-  repeat {
-
-    r <- which(ctree[, 2] == i | ctree[, 3] == i)
-
-    if (length(r) == 0) {
-
-      ti <- ctree[i, 4]
-
-      if (ti > 0) {
-
-        ctree <- rbind(ctree, rep(0, 4))
-
-        ctree[j, ] <- c(ttree[ti, 1], i, 0, ttree[ti, 3])
-#        ctree[r, which(ctree[r, 2:3] == i) + 1] <- j
-
-        j <- j + 1
+        break
 
       }
 
-    } else if (ctree[i, 4] != ctree[r, 4]) {
-
-      ti <- ctree[i, 4]
-
-      ctree <- rbind(ctree, rep(0, 4))
-
-      ctree[j, ] <- c(ttree[ti, 1], i, 0, ttree[ti, 3])
-      ctree[r, which(ctree[r, 2:3] == i) + 1] <- j
-
-      j <- j + 1
+      phy_ord <- c(phy_ord, phy_ord_new)
 
     }
 
-    if (i < length(ctree[, 1])) {
 
-      i <- i + 1
+    sams <- length(obs[, 1])
 
-    } else {
+    ctree <- matrix(0, sams, 4)
+    ctree[, 1] <- obs[, 1]
+    ctree[, 4] <- obs[, 2]
+
+    for (i in 1:length(phy_ord)) {
+
+      host <- phy_ord[i]
+
+      leaves <- which(ctree[, 4] == host)
+
+      if (length(leaves) == 1) {
+
+        ctree <- rbind(ctree, rep(0, 4))
+
+        ctree[length(ctree[, 1]), ] <- c(ttree[host, 1], leaves, 0, ttree[host, 3])
+
+      } else {
+
+        inf_time <- ttree[host, 1]
+
+        leaf_times <- ctree[leaves, 1]
+        leaf_order <- order(leaf_times, decreasing = T)
+
+        l <- 1
+
+        lin <- c(leaves[leaf_order[l]])
+        t <- leaf_times[leaf_order[l]]
+
+        repeat {
+
+          if (length(lin) == 1) {
+
+            l <- l + 1
+
+            if (l > length(leaves)) {
+
+              ctree <- rbind(ctree, rep(0, 4))
+
+              ctree[length(ctree[, 1]), ] <- c(inf_time, lin, 0, ttree[host, 3])
+
+              break
+
+            } else {
+
+              lin <- c(lin, leaves[leaf_order[l]])
+              t <- leaf_times[leaf_order[l]]
+
+            }
+
+          } else {
+
+            if (l == length(leaves)) {
+
+              lim_time <- inf_time
+
+            } else {
+
+              lim_time <- leaf_times[leaf_order[l + 1]]
+
+            }
+
+            coa_time <- inf_time + (1 / lm_rate) * ((1 - runif(1)) ^ (lm_rate / choose(length(lin), 2)) * (lm_rate * (t - inf_time) + lm_const) - lm_const)
+
+            if (coa_time > lim_time) {
+
+              sam <- sample(1:choose(length(lin), 2), size = 1)
+
+              children_idx <- combn(length(lin), 2)[, sam]
+              children <- lin[children_idx]
+
+              ctree <- rbind(ctree, rep(0, 4))
+
+              ctree[length(ctree[, 1]), ] <- c(coa_time, children, host)
+
+              lin <- c(lin[which(!(lin %in% children))], length(ctree[, 1]))
+              t <- coa_time
+
+            } else {
+
+              l <- l + 1
+
+              if (l > length(leaves)) {
+
+                for (j in 1:length(lin)) {
+
+                  ctree <- rbind(ctree, rep(0, 4))
+
+                  ctree[length(ctree[, 1]), ] <- c(inf_time, lin[j], 0, ttree[host, 3])
+
+                }
+
+                break
+
+              } else {
+
+                lin <- c(lin, leaves[leaf_order[l]])
+                t <- leaf_times[leaf_order[l]]
+
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+
+    }
+
+    if (length(which(ctree[, 4] == 0)) == 1) {
 
       break
 
     }
 
   }
-
 
   ord <- c(1:sams, sams + order(ctree[(sams + 1):length(ctree[, 1]), 1], decreasing = T))
   invord = 1:length(ord)
@@ -367,6 +418,8 @@ sim_ongoing <- function(off.r = 1,
   ctree[, ] <- ctree[ord, ]
   ctree[which(ctree[, 2] > 0), 2] <- invord[ctree[which(ctree[, 2] > 0), 2]]
   ctree[which(ctree[, 3] > 0), 3] <- invord[ctree[which(ctree[, 3] > 0), 3]]
+
+  ctree <- order_hosts(ctree)
 
   nam_host <- ctree[1:sams, 4]
   nam_num <- integer(sams)
