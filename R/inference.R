@@ -208,20 +208,24 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       if (u < 1 / 3) {
 
         proptree <- add_transmission_3(ctree)
+        prop_type <- 1
 
       } else if (u < 2 / 3) {
 
         proptree <- remove_transmission_3(ctree)
+        prop_type <- 2
 
       } else {
 
         proptree <- remove_add_3(ctree)
+        prop_type <- 3
 
       }
 
 
 #      if (proptree$is_valid == 1 & proptree$is_possible == 1) {
 
+      prop_acc <- 0
       if (proptree$is_possible == 1) {
 
         ctree2 <- proptree$ctree
@@ -239,9 +243,19 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
           pTTree <- pTTree2
           pPTree <- pPTree2
 
+          prop_acc <- 1
+
         }
 
       }
+
+      if (i %% thinning == 0) {
+
+        record[[i / thinning]]$prop_type <- prop_type
+        record[[i / thinning]]$prop_acc <- prop_acc
+
+      }
+
 
     }
 

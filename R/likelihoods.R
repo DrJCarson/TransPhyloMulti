@@ -38,7 +38,7 @@ log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
 
   for (i in 1:nhosts) {
 
-    tidx <- 1 + round((dateT - ttree[i, 1]) / delta)
+    tidx <- 1 + floor((dateT - ttree[i, 1]) / delta)
 
     if (ttree[i, 2] > 0) {
 
@@ -69,7 +69,7 @@ log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
 
         inf_host <- inc_off_idx[j]
 
-        tidx2 <- 1 + round((dateT - ttree[inf_host, 1]) / delta)
+        tidx2 <- 1 + floor((dateT - ttree[inf_host, 1]) / delta)
 
         log_lik <- log_lik + log(1 - omega[tidx2])
 
