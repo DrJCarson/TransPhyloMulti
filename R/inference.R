@@ -119,7 +119,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
   if (is.na(qPi)) {
 
-    qPi <- min(0.1, 1 / length(ptree$nam))
+    qPi <- 1
 
   }
 
