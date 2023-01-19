@@ -31,6 +31,8 @@ inferTTreeM(
   qOff.r = NA,
   qOff.p = NA,
   qPi = NA,
+  bw = 0.1,
+  rd = 1,
   startCTree = NA,
   updateTTree = TRUE,
   dateS = -Inf,

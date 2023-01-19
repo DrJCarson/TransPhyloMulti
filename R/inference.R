@@ -37,7 +37,8 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
                          thinning = 1, start_const = 2, start_rate = 2, startOff.r = 1, startOff.p = 0.5,
                          startPi = 0.5, updateconst = TRUE, updaterate = TRUE, updateOff.r = TRUE, updateOff.p = FALSE,
                          updatePi = TRUE, qconst = NA, qrate = NA, qOff.r = NA, qOff.p = NA, qPi = NA,
-                         startCTree = NA, updateTTree = TRUE, dateS = -Inf, dateT = Inf, delta = 1 / 365, verbose = F) {
+                         bw = 0.1, rd = 1, startCTree = NA, updateTTree = TRUE, dateS = -Inf, dateT = Inf,
+                        delta = 1 / 365, verbose = F) {
 
   ptree$ptree[, 1] <- ptree$ptree[, 1] + runif(nrow(ptree$ptree)) * 1e-10 #Ensure that all leaves have unique times
 
@@ -207,17 +208,17 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       u <- runif(1)
       if (u < 1 / 3) {
 
-        proptree <- add_transmission_3(ctree)
+        proptree <- add_transmission_3(ctree = ctree, bn_weight = bw)
         prop_type <- 1
 
       } else if (u < 2 / 3) {
 
-        proptree <- remove_transmission_3(ctree)
+        proptree <- remove_transmission_3(ctree = ctree, bn_weight = bw)
         prop_type <- 2
 
       } else {
 
-        proptree <- remove_add_3(ctree)
+        proptree <- remove_add_3(ctree = ctree, bn_weight = bw, delta = rd)
         prop_type <- 3
 
       }
