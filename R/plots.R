@@ -20,7 +20,7 @@ plotTTree_summ = function(ttree, showLabels = T, maxTime = NA, cex = 1) {
   while (length(todo) > 0) {
 
     f <- which(ttree[, 3] == todo[1])
-    o <- rank(-ttree[f, 1])
+    o <- rank(-ttree[f, 1], ties.method = "first")
     f[o] <- f
 
     for (i in f) {
@@ -180,5 +180,43 @@ plotTTree_det = function(ttree, w.shape, w.scale, showLabels = TRUE, maxTime = N
   }
 
   return(invisible(ttree))
+
+}
+
+
+#' Plot MCMC traces
+#' @param record Output from inferTTree function
+#' @param burnin Proportion of the MCMC output to be discarded as burnin
+#' @param extend Whether to also show traces of off.r and off.p
+#' @return Returns invisibly the first parameter
+#' @export
+plotTracesM <- function(record, burnin = 0) {
+
+  oldpar <- par(no.readonly = TRUE)
+  on.exit(par(oldpar))
+
+  par(mfrow = c(3, 2))
+
+  record <- record[max(1, round(length(record) * burnin)):length(record)]
+
+  plot(sapply(record, function(x) x$pTTree + x$pPTree), ylab = 'Posterior probability',
+       xlab = 'MCMC iterations', type = 'l')
+
+  plot(sapply(record, function(x) x$pi), ylab = 'Sampling proportion pi',
+       xlab = 'MCMC iterations', type = 'l')
+
+  plot(sapply(record, function(x) x$lm_const), ylab = 'Within-host initial population lm_const',
+       xlab = 'MCMC iterations', type = 'l')
+
+  plot(sapply(record, function(x) x$lm_rate), ylab = 'Within-host population growth rate lm_rate',
+       xlab = 'MCMC iterations', type = 'l')
+
+  plot(sapply(record, function(x) x$off.r), ylab = 'off.r',
+       xlab = 'MCMC iterations', type = 'l')
+
+  plot(sapply(record, function(x) x$off.p), ylab = 'off.p',
+       xlab = 'MCMC iterations', type = 'l')
+
+  return(invisible(record))
 
 }
