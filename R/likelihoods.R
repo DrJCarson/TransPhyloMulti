@@ -14,18 +14,13 @@
 #' @param delta Discrete time step.
 #'
 #' @export
-log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
-                          ws.scale, dateS, dateT, delta = 1 / 365) {
+log_lik_ttree <- function(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
+                          ws.scale, dateS, dateT, delta = 1 / 365, hosts = NA) {
 
   obs <- ttree$obs
   ttree <- ttree$ttree
 
   log_lik <- 0
-
-  grid <- seq(dateT, min(ttree[, 1]) - delta, by = - delta)
-
-  fn_list <- num_approx_disc(grid, delta, off.r, off.p, pi, w.shape, w.scale,
-                             ws.shape, ws.scale, dateS, dateT)
 
   omega <- fn_list$omega
   omega_bar <- fn_list$omega_bar
@@ -33,10 +28,15 @@ log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
   pit <- fn_list$pit
   gamma_prob <- fn_list$gamma_prob
 
-  nhosts <- nrow(ttree)
+  if (is.na(sum(hosts))) {
+
+    hosts <- 1:nrow(ttree)
+
+  }
+
   sum_lim <- qnbinom(0.999999, size = off.r, prob = off.p)
 
-  for (i in 1:nhosts) {
+  for (i in hosts) {
 
     tidx <- 1 + floor((dateT - ttree[i, 1]) / delta)
 
