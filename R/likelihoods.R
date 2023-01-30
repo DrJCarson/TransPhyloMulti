@@ -42,7 +42,8 @@ log_lik_ttree <- function(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws
 
     if (ttree[i, 2] > 0) {
 
-      log_lik <- log_lik + log(pi) - log(1 - omega[tidx])
+      log_lik <- log_lik + log(pi)
+      #- log(1 - omega[tidx])
 
       obs_time <- min(obs[which(obs[, 2] == i), 1])
 
@@ -50,7 +51,8 @@ log_lik_ttree <- function(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws
 
     } else {
 
-      log_lik <- log_lik + log(1 - pit[tidx]) - log(1 - omega[tidx])
+      log_lik <- log_lik + log(1 - pit[tidx])
+      #- log(1 - omega[tidx])
 
     }
 
@@ -71,7 +73,7 @@ log_lik_ttree <- function(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws
 
         tidx2 <- 1 + floor((dateT - ttree[inf_host, 1]) / delta)
 
-        log_lik <- log_lik + log(1 - omega[tidx2])
+        #log_lik <- log_lik + log(1 - omega[tidx2])
 
         log_lik <- log_lik + dgamma(ttree[inf_host, 1] - ttree[i, 1], shape = w.shape, scale = w.scale, log = T)
 
