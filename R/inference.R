@@ -96,25 +96,25 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
   if (is.na(qconst)) {
 
-    qconst <- 0.1
+    qconst <- 0.5
 
   }
 
   if (is.na(qrate)) {
 
-    qrate <- 0.1
+    qrate <- 0.5
 
   }
 
   if (is.na(qOff.r)) {
 
-    qOff.r <- min(0.5, 5 / length(ptree$nam))
+    qOff.r <- 0.5
 
   }
 
   if (is.na(qOff.p)) {
 
-    qOff.p <- min(0.1, 1 / length(ptree$nam))
+    qOff.p <- 0.5
 
   }
 
