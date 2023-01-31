@@ -105,7 +105,10 @@ log_likelihood_coalescence_linear <- function(infected_time, final_time,
 
   if (coalescence == 1) {
 
-    log_likelihood_increment <- - log(lm_rate * (final_time - infected_time) +
+    if (lm_rate==0)
+      log_likelihood_increment <- (-log(lm_const) * lm_const + branch_combs * final_time - branch_combs * start_time) / lm_const
+    else
+      log_likelihood_increment <- - log(lm_rate * (final_time - infected_time) +
                                 lm_const) - (branch_combs / lm_rate) * (log(
                                 lm_rate * (start_time - infected_time) +
                                 lm_const) - log(lm_rate * (final_time -
@@ -114,8 +117,10 @@ log_likelihood_coalescence_linear <- function(infected_time, final_time,
   } else {
 
     if (branch_combs > 0) {
-
-      log_likelihood_increment <- - (branch_combs / lm_rate) * (log(lm_rate *
+      if (lm_rate==0)
+        log_likelihood_increment <- (branch_combs * final_time - branch_combs * start_time) / lm_const
+      else
+        log_likelihood_increment <- - (branch_combs / lm_rate) * (log(lm_rate *
                                 (start_time - infected_time) + lm_const) - log(
                                 lm_rate * (final_time - infected_time) + lm_const))
 
