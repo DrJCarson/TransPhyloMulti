@@ -354,7 +354,10 @@ sim_ongoing <- function(off.r = 1,
 
             }
 
-            coa_time <- inf_time + (1 / lm_rate) * ((1 - runif(1)) ^ (lm_rate / choose(length(lin), 2)) * (lm_rate * (t - inf_time) + lm_const) - lm_const)
+            if (lm_rate==0)
+              coa_time <- t+log(1-runif(1))*lm_const/choose(length(lin),2)
+            else
+              coa_time <- inf_time + (1 / lm_rate) * ((1 - runif(1)) ^ (lm_rate / choose(length(lin), 2)) * (lm_rate * (t - inf_time) + lm_const) - lm_const)
 
             if (coa_time > lim_time) {
 
