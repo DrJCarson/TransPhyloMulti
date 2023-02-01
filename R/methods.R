@@ -39,7 +39,7 @@ plot.ptreem <- function(x, ...) {
 
   stopifnot(inherits(x, "ptreem"))
 
-  phy <- phyloFromPTreeM(x)
+  phy <- phyloFromPTree(x)
 
   ape::plot.phylo(phy, ...)
   ape::axisPhylo(backward = F)
