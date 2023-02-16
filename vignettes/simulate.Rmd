@@ -26,7 +26,7 @@ pi=0.25
 We simulate an outbreak that starts in 2005 and which and is observed up to 2010:
 
 ```{r}
-dateT=2013
+dateT=2011
 simu <- sim_ongoing(pi=pi,off.r=off.r,w.shape=w.shape,
                          w.scale=w.scale,dateStartOutbreak=2005,dateT=dateT,add.prob = 0.6,lm_const = 0.5,lm_rate = 0.5)
 ```
