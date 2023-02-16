@@ -252,6 +252,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
           pPTree2 <- log_lik_ptree_given_ctree(ctree2, lm_const, lm_rate)
 
+
           if (log(runif(1)) < (pTTree_part2 + pPTree2 + proptree$rev_density - pTTree_part - pPTree - proptree$prop_density)) {
 
             ctree <- ctree2

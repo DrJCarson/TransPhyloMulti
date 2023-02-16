@@ -76,7 +76,7 @@ axisPhylo(backward = F)
 Now let's try inference:
 
 ```{r,results='hide'}
-res<-inferTTreeM(ptree,mcmcIterations=100,w.shape=w.shape,w.scale=w.scale,dateT=dateT,startPi=0.25,updatePi=T,startOff.r=2,updateOff.r=T,start_const=1,start_rate=1,updateconst = T,updaterate=T,startCTree = simu)
+res<-inferTTreeM(ptree,mcmcIterations=100,w.shape=w.shape,w.scale=w.scale,dateT=dateT,startPi=0.25,updatePi=T,startOff.r=2,updateOff.r=T,start_const=1,start_rate=1,updateconst = T,updaterate=T)
 ```
 
 ```{r}
