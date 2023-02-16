@@ -182,6 +182,7 @@ init_ctree <- function(ptree) {
           ctree[prop_rows, 4] <- h
 
           tr_rows <- c(tr_rows[-iback], prop_rows)
+          tr_rows <- unique(tr_rows)
 
         } else {
 
@@ -393,6 +394,7 @@ init_ctree <- function(ptree) {
 
     for (i in 1:length(ord)) {
 
+
       h2 <- ord[i]
       h1 <- host_par[h2]
 
@@ -409,8 +411,11 @@ init_ctree <- function(ptree) {
           rm_rows <- r1[which(ctree[ctree[r1, 2], 4] == h2)]
           rm_rows <- sort(rm_rows, decreasing = T)
 
-          ctree[which(ctree[, 4] == h1), 4] <- h2
-          ctree[which(ctree[, 4] > h1), 4] <- ctree[which(ctree[, 4] > h1), 4] - 1
+          hmin <- min(c(h1, h2))
+          hmax <- max(c(h1, h2))
+
+          ctree[which(ctree[, 4] == hmax), 4] <- hmin
+          ctree[which(ctree[, 4] > hmax), 4] <- ctree[which(ctree[, 4] > hmax), 4] - 1
 
           for (r in rm_rows) {
 
@@ -434,16 +439,16 @@ init_ctree <- function(ptree) {
 
           }
 
-          ord[which(ord == h1)] <- h2
-          ord[which(ord > h1)] <- ord[which(ord > h1)] - 1
+          ord[which(ord == hmax)] <- hmin
+          ord[which(ord > hmax)] <- ord[which(ord > hmax)] - 1
 
-          host_par[h2] <- host_par[h1]
-          host_par[which(host_par == h1)] <- h2
-          host_par <- host_par[-h1]
-          host_par[which(host_par > h1)] <- host_par[which(host_par > h1)] - 1
+          host_par[hmin] <- host_par[hmax]
+          host_par[which(host_par == hmax)] <- hmin
+          host_par <- host_par[-hmax]
+          host_par[which(host_par > hmax)] <- host_par[which(host_par > hmax)] - 1
 
-          host_lin[h2] <- host_lin[h1]
-          host_lin <- host_lin[-h1]
+          host_lin[hmin] <- host_lin[hmax]
+          host_lin <- host_lin[-hmax]
 
         }
 
@@ -461,6 +466,7 @@ init_ctree <- function(ptree) {
 
   l <- list(ctree = ctree, nam = nam)
   class(l) <- 'ctree'
+
 
   return(l)
 
