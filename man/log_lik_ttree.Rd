@@ -6,6 +6,7 @@
 \usage{
 log_lik_ttree(
   ttree,
+  fn_list,
   off.r,
   off.p,
   pi,
@@ -15,7 +16,8 @@ log_lik_ttree(
   ws.scale,
   dateS,
   dateT,
-  delta = 1/365
+  delta = 1/365,
+  hosts = NA
 )
 }
 \arguments{

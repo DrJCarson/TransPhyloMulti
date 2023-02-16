@@ -1,0 +1,85 @@
+---
+title: "Testing TransPhyloMulti"
+author: "Xavier Didelot"
+date: '`r Sys.Date()`'
+output: pdf_document
+---
+```{r echo=F}
+knitr::opts_chunk$set(fig.width=6, fig.height=4) 
+```
+
+If you want to reproduce exactly the same results as the ones shown in this vignette, you need to set the seed of your random number generator to zero:
+```{r}
+library(TransPhylo)
+library(TransPhyloMulti)
+set.seed(0)
+```
+
+The offspring distribution is negative binomial with mean equal to the basic reproduction number $R=2$. Both the generation time and the sampling time are Gamma distributed with parameters (10,0.1) which has a mean of 1 year. The density of sampling is $\pi=0.25$. The following commands specify these parameters:
+```{r}
+off.r=2
+w.shape=10
+w.scale=0.1
+pi=0.25
+```
+
+We simulate an outbreak that starts in 2005 and which and is observed up to 2010:
+
+```{r}
+dateT=2011
+simu <- sim_ongoing(pi=pi,off.r=off.r,w.shape=w.shape,
+                         w.scale=w.scale,dateStartOutbreak=2005,dateT=dateT,add.prob = 0.6,lm_const = 0.5,lm_rate = 0.5)
+```
+
+This simulation contains both the transmission tree between infected hosts and the within-host phylogenetic tree of each host. This can be visualised as a colored phylogenetic tree, where each host is represented by a unique color:
+
+```{r}
+plot(simu)
+```
+
+The transmission tree can be extracted and plotted separately from the phylogeny:
+
+```{r}
+ttree<-extractTTreeM(simu)
+plot(ttree)
+```
+
+A more detailed plot can be displayed as follows:
+
+```{r}
+plot(ttree,type='detailed',w.shape,w.scale)
+```
+
+The phylogenetic tree can be extracted and plotted separately from the transmission tree:
+
+```{r}
+ptree<-extractPTreeM(simu)
+plot(ptree)
+```
+
+The extracted phylogenetic tree can also be converted into a phylo object from the ape package:
+
+```{r}
+library(ape)
+p<-phyloFromPTree(ptree)
+plot(p)
+axisPhylo(backward = F)
+```
+
+
+#```{r}
+#write.tree(p,'tree.nwk')
+#p=read.tree('tree.nwk')
+#ptree=ptreeFromPhyloM(p,dateLastSample = dateLastSample(simu))
+#```
+
+Now let's try inference:
+
+```{r,results='hide'}
+res<-inferTTreeM(ptree,mcmcIterations=100,w.shape=w.shape,w.scale=w.scale,dateT=dateT,startPi=0.25,updatePi=T,startOff.r=2,updateOff.r=T,start_const=1,start_rate=1,updateconst = T,updaterate=T)
+```
+
+```{r}
+plot(res)
+```
+

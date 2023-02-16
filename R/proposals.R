@@ -12,6 +12,7 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
   # Random numbers for sampling
   host <- sample(1:max(ctree[, 4]), size = 1)
+  curr_hosts <- host
   u1 <- runif(1)
   u2 <- runif(1)
 
@@ -431,6 +432,8 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
   # Order hosts
   ctree <- order_hosts(ctree)
 
+  prop_hosts <- c(ctree[tar_row, 4], ctree[ctree[tar_row, 2], 4])
+
   # Log density of reverse move
   # Sample rows and host
   obs_idx <- which(ctree[, 2] == 0 & ctree[, 3] == 0)
@@ -449,7 +452,8 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
   new_ctree <- list(ctree = ctree, nam = nam)
   class(new_ctree) <- 'ctree'
 
-  return(list(ctree = new_ctree, prop_density = prop_density, rev_density = rev_density, is_possible = 1))
+  return(list(ctree = new_ctree, prop_density = prop_density, rev_density = rev_density, is_possible = 1,
+              curr_hosts = curr_hosts, prop_hosts = prop_hosts))
 
 }
 
@@ -484,7 +488,8 @@ remove_transmission_3 <- function(ctree, bn_weight = 0.1) {
     new_ctree <- list(ctree = ctree, nam = nam)
     class(new_ctree) <- 'ctree'
 
-    return(list(ctree = new_ctree, prop_density = 1, rev_density = 1, is_possible = 0))
+    return(list(ctree = new_ctree, prop_density = 1, rev_density = 1, is_possible = 0,
+                curr_hosts = c(), prop_hosts = c()))
 
   }
 
@@ -496,6 +501,8 @@ remove_transmission_3 <- function(ctree, bn_weight = 0.1) {
   sam_time <- ctree[sam_ct, 1]
   sam_host1 <- ctree[sam_ct, 4]
   sam_host2 <- ctree[ctree[sam_ct, 2], 4]
+
+  curr_hosts <- c(sam_host1, sam_host2)
 
   # All ctree rows associated with transmission
   sam_tr_ex <- which(ctree[tr_idx, 1] == sam_time &
@@ -762,10 +769,13 @@ remove_transmission_3 <- function(ctree, bn_weight = 0.1) {
   # Order hosts
   ctree <- order_hosts(ctree)
 
+  prop_hosts <- ctree[rows_host[1], 4]
+
   new_ctree <- list(ctree = ctree, nam = nam)
   class(new_ctree) <- 'ctree'
 
-  return(list(ctree = new_ctree, prop_density = prop_density, rev_density = rev_density, is_possible = 1))
+  return(list(ctree = new_ctree, prop_density = prop_density, rev_density = rev_density, is_possible = 1,
+              curr_hosts = curr_hosts, prop_hosts = prop_hosts))
 
 }
 
@@ -803,8 +813,11 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
   # Propose new root time
   if (sam_host1 == 0) {
 
+    curr_hosts <- sam_host2
+    prop_hosts <- sam_host2
+
     # Perturb root time
-    ctree[sam_ct, 1] <- sam_time + rnorm(1, mean = 0, sd = delta)
+    ctree[sam_ct, 1] <- sam_time + delta * (runif(1) - 0.5)
 
     # Reflect if proposed time exceeds next event time
     if (ctree[sam_ct, 1] > ctree[ctree[sam_ct, 2], 1]) {
@@ -820,6 +833,8 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     # Remove transmission and replace it
   } else {
+
+    curr_hosts <- c(sam_host1, sam_host2)
 
     ##################### Remove transmission ##################################
 
@@ -1338,12 +1353,15 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     ctree <- order_hosts(ctree)
 
+    prop_hosts <- c(ctree[tar_row, 4], ctree[ctree[tar_row, 2], 4])
+
   }
 
   new_ctree <- list(ctree = ctree, nam = nam)
   class(new_ctree) <- 'ctree'
 
-  return(list(ctree = new_ctree, prop_density = prop_density, rev_density = rev_density, is_possible = 1))
+  return(list(ctree = new_ctree, prop_density = prop_density, rev_density = rev_density, is_possible = 1,
+              curr_hosts = curr_hosts, prop_hosts = prop_hosts))
 
 }
 

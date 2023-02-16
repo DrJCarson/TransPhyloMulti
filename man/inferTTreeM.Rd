@@ -16,6 +16,7 @@ inferTTreeM(
   ws.std = NA,
   mcmcIterations = 1000,
   thinning = 1,
+  tree_updates = 1,
   start_const = 2,
   start_rate = 2,
   startOff.r = 1,

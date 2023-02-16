@@ -14,18 +14,13 @@
 #' @param delta Discrete time step.
 #'
 #' @export
-log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
-                          ws.scale, dateS, dateT, delta = 1 / 365) {
+log_lik_ttree <- function(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
+                          ws.scale, dateS, dateT, delta = 1 / 365, hosts = NA) {
 
   obs <- ttree$obs
   ttree <- ttree$ttree
 
   log_lik <- 0
-
-  grid <- seq(dateT, min(ttree[, 1]) - delta, by = - delta)
-
-  fn_list <- num_approx_disc(grid, delta, off.r, off.p, pi, w.shape, w.scale,
-                             ws.shape, ws.scale, dateS, dateT)
 
   omega <- fn_list$omega
   omega_bar <- fn_list$omega_bar
@@ -33,16 +28,22 @@ log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
   pit <- fn_list$pit
   gamma_prob <- fn_list$gamma_prob
 
-  nhosts <- nrow(ttree)
+  if (is.na(sum(hosts))) {
+
+    hosts <- 1:nrow(ttree)
+
+  }
+
   sum_lim <- qnbinom(0.999999, size = off.r, prob = off.p)
 
-  for (i in 1:nhosts) {
+  for (i in hosts) {
 
     tidx <- 1 + floor((dateT - ttree[i, 1]) / delta)
 
     if (ttree[i, 2] > 0) {
 
-      log_lik <- log_lik + log(pi) - log(1 - omega[tidx])
+      log_lik <- log_lik + log(pi)
+      #- log(1 - omega[tidx])
 
       obs_time <- min(obs[which(obs[, 2] == i), 1])
 
@@ -50,7 +51,8 @@ log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
 
     } else {
 
-      log_lik <- log_lik + log(1 - pit[tidx]) - log(1 - omega[tidx])
+      log_lik <- log_lik + log(1 - pit[tidx])
+      #- log(1 - omega[tidx])
 
     }
 
@@ -71,7 +73,7 @@ log_lik_ttree <- function(ttree, off.r, off.p, pi, w.shape, w.scale, ws.shape,
 
         tidx2 <- 1 + floor((dateT - ttree[inf_host, 1]) / delta)
 
-        log_lik <- log_lik + log(1 - omega[tidx2])
+        #log_lik <- log_lik + log(1 - omega[tidx2])
 
         log_lik <- log_lik + dgamma(ttree[inf_host, 1] - ttree[i, 1], shape = w.shape, scale = w.scale, log = T)
 
@@ -103,7 +105,10 @@ log_likelihood_coalescence_linear <- function(infected_time, final_time,
 
   if (coalescence == 1) {
 
-    log_likelihood_increment <- - log(lm_rate * (final_time - infected_time) +
+    if (lm_rate==0)
+      log_likelihood_increment <- (-log(lm_const) * lm_const + branch_combs * final_time - branch_combs * start_time) / lm_const
+    else
+      log_likelihood_increment <- - log(lm_rate * (final_time - infected_time) +
                                 lm_const) - (branch_combs / lm_rate) * (log(
                                 lm_rate * (start_time - infected_time) +
                                 lm_const) - log(lm_rate * (final_time -
@@ -112,8 +117,10 @@ log_likelihood_coalescence_linear <- function(infected_time, final_time,
   } else {
 
     if (branch_combs > 0) {
-
-      log_likelihood_increment <- - (branch_combs / lm_rate) * (log(lm_rate *
+      if (lm_rate==0)
+        log_likelihood_increment <- (branch_combs * final_time - branch_combs * start_time) / lm_const
+      else
+        log_likelihood_increment <- - (branch_combs / lm_rate) * (log(lm_rate *
                                 (start_time - infected_time) + lm_const) - log(
                                 lm_rate * (final_time - infected_time) + lm_const))
 
