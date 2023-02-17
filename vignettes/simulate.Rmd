@@ -15,6 +15,8 @@ library(TransPhyloMulti)
 set.seed(0)
 ```
 
+# Simulation
+
 The offspring distribution is negative binomial with mean equal to the basic reproduction number $R=2$. Both the generation time and the sampling time are Gamma distributed with parameters (10,0.1) which has a mean of 1 year. The density of sampling is $\pi=0.25$. The following commands specify these parameters:
 ```{r}
 off.r=2
@@ -23,12 +25,21 @@ w.scale=0.1
 pi=0.25
 ```
 
-We simulate an outbreak that starts in 2005 and which and is observed up to 2010:
+For the within-host population size we consider a linear growth model starting from a size of 0.5 and increasing with a rate of 0.5:
+```{r}
+lm_const=0.5
+lm_rate=0.5
+plot(c(0,3),lm_const+c(0,3)*lm_rate,xlab='Time since infection',
+     ylab='Within host effective population size',type='l',ylim=c(0,lm_const+3*lm_rate))
+```
+
+We simulate an outbreak that starts in 2005 and which and is observed up to 2013:
 
 ```{r}
-dateT=2011
+dateT=2013
 simu <- sim_ongoing(pi=pi,off.r=off.r,w.shape=w.shape,
-                         w.scale=w.scale,dateStartOutbreak=2005,dateT=dateT,add.prob = 0.6,lm_const = 0.5,lm_rate = 0.5)
+                    w.scale=w.scale,dateStartOutbreak=2005,dateT=dateT,add.prob = 0.6,
+                    lm_const = lm_const,lm_rate = lm_rate)
 ```
 
 This simulation contains both the transmission tree between infected hosts and the within-host phylogenetic tree of each host. This can be visualised as a colored phylogenetic tree, where each host is represented by a unique color:
@@ -66,18 +77,28 @@ plot(p)
 axisPhylo(backward = F)
 ```
 
+# Inference
 
-#```{r}
-#write.tree(p,'tree.nwk')
-#p=read.tree('tree.nwk')
-#ptree=ptreeFromPhyloM(p,dateLastSample = dateLastSample(simu))
-#```
+Typically inference would start with a phylogenetic tree stored in a Newick file.
+We also need to know the date of the last sample, in order to know the absolute dates of
+all nodes in the tree. Let's write the tree from the simulation above to a Newick file,
+read it and combine with the known date of the last sample to produce an absolutely dated tree:
 
-Now let's try inference:
+```{r}
+write.tree(p,'tree.nwk')
+p=read.tree('tree.nwk')
+ptree=ptreeFromPhyloM(p,dateLastSample = dateLastSample(simu))
+```
+
+Now we can perform inference of the transmission tree given this dated phylogenetic tree:
 
 ```{r,results='hide'}
-res<-inferTTreeM(ptree,mcmcIterations=100,w.shape=w.shape,w.scale=w.scale,dateT=dateT,startPi=0.25,updatePi=T,startOff.r=2,updateOff.r=T,start_const=1,start_rate=1,updateconst = T,updaterate=T)
+res<-inferTTreeM(ptree,mcmcIterations=100,w.shape=w.shape,w.scale=w.scale,dateT=dateT,
+                 startPi=0.25,updatePi=T,startOff.r=2,updateOff.r=T,start_const=1,start_rate=1,
+                 updateconst = T,updaterate=T)
 ```
+
+We can plot the traces of the MCMC:
 
 ```{r}
 plot(res)
