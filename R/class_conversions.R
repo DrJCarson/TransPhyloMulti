@@ -4,7 +4,7 @@
 #' @return phylogenetic tree
 #' @export
 ptreeFromPhyloM <- function(tr,dateLastSample) {
-  ptree=ptreeFromPhylo(p,dateLastSample = dateLastSample)
+  ptree=ptreeFromPhylo(tr,dateLastSample = dateLastSample)
   ptree$host=as.numeric(unlist(strsplit(ptree$nam,'\\.'))[seq(1,length(ptree$nam)*2,2)]) #Extract host information from leaf names
   n=length(ptree$host) # Number of leaves
   w=(n+1):nrow(ptree$ptree) # Indexes of internal nodes
