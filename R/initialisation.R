@@ -214,7 +214,49 @@ init_ctree <- function(ptree) {
 
     }
 
-    h <- host_todo[1]
+    host_inf_times <- numeric(length(host_todo))
+
+    for (i in 1:length(host_todo)) {
+
+      h <- host_todo[i]
+
+      # Determine rows over which transmission occur
+      tr_rows <- which(ctree[, 4] == h & ctree[, 3] == 0)
+
+      tr_pars <- parents[tr_rows]
+
+      iback <- which(ctree[tr_pars, 1] == max(ctree[tr_pars, 1]))
+      rback <- tr_rows[iback]
+
+      prop_rows <- c(tr_rows[-iback], tr_pars[iback])
+      prop_rows <- unique(prop_rows)
+
+      if (any(prop_rows == nrow(ctree))) {
+
+        host_inf_times[i] <- -Inf
+
+      } else if (any(ctree[prop_rows, 4] > 0 & ctree[prop_rows, 4] != h)) {
+
+        host_inf_times[i] <- -Inf
+
+      } else {
+
+        anc_rows <- parents[prop_rows]
+
+        min_time <- max(ctree[anc_rows, 1])
+        max_time <- min(ctree[prop_rows, 1])
+
+        inf_time <- 0.5 * (min_time + max_time)
+
+        host_inf_times[i] <- inf_time
+
+      }
+
+    }
+
+    h_ind <- which(host_inf_times == max(host_inf_times))[1]
+
+    h <- host_todo[h_ind]
 
     # Determine rows over which transmission occur
     tr_rows <- which(ctree[, 4] == h & ctree[, 3] == 0)
@@ -239,7 +281,7 @@ init_ctree <- function(ptree) {
 
       new_host <- new_host - 1
 
-      host_todo <- host_todo[-1]
+      host_todo <- host_todo[-h_ind]
 
       # Check if host needs to be relabeled
     } else if (any(ctree[prop_rows, 4] > 0 & ctree[prop_rows, 4] != h)) {
@@ -254,7 +296,7 @@ init_ctree <- function(ptree) {
 
       new_host <- new_host - 1
 
-      host_todo <- host_todo[-1]
+      host_todo <- host_todo[-h_ind]
 
     } else {
 
@@ -354,7 +396,7 @@ init_ctree <- function(ptree) {
       branch_low_time <- ctree[parents, 1]
       branch_upp_time <- ctree[1:nrow(ctree), 1]
 
-      host_todo <- host_todo[-1]
+      host_todo <- host_todo[-h_ind]
 
     }
 
