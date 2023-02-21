@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6840 64-bit) (preloaded format=pdflatex 2018.11.11)  16 FEB 2023 16:24
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6840 64-bit) (preloaded format=pdflatex 2018.11.11)  21 FEB 2023 17:14
 entering extended mode
-**C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simulate
+**C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate
 .tex
 
-(C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simulate.
+(C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate.
 tex
 LaTeX2e <2018-04-01> patch level 5
 ("D:\Program Files\MiKTeX 2.9\tex\latex\base\article.cls"
@@ -671,122 +671,128 @@ LaTeX Font Info:    Try loading font information for T1+lmtt on input line 118.
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 126.
+(Font)              <10> on input line 129.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 126.
+(Font)              <7> on input line 129.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 126.
-<C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simulate_
-files/figure-latex/unnamed-chunk-5-1.pdf, id=3, 433.62pt x 289.08pt>
-File: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simu
-late_files/figure-latex/unnamed-chunk-5-1.pdf Graphic file (type pdf)
-<use C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simul
-ate_files/figure-latex/unnamed-chunk-5-1.pdf>
-Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2a
-ac40af47f5.dir/simulate_files/figure-latex/unnamed-chunk-5-1.pdf  used on input
- line 162.
-(pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
-[1
-
-{C:/Users/Jake/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-<C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simulate_
-files/figure-latex/unnamed-chunk-6-1.pdf, id=15, 433.62pt x 289.08pt>
-File: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simu
-late_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pdf)
-<use C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simul
-ate_files/figure-latex/unnamed-chunk-6-1.pdf>
-Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2a
-ac40af47f5.dir/simulate_files/figure-latex/unnamed-chunk-6-1.pdf  used on input
- line 174.
-(pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
-[2 <C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simula
-te_files/figure-latex/unnamed-chunk-5-1.pdf> <C:/Users/Jake/AppData/Local/Temp/
-RtmpySvnsr/preview-2aac40af47f5.dir/simulate_files/figure-latex/unnamed-chunk-6
--1.pdf>]
-LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 180
+(Font)              <5> on input line 129.
+LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 150
 .
 ("D:\Program Files\MiKTeX 2.9\tex\latex\lm\ts1lmtt.fd"
 File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-<C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simulate_
-files/figure-latex/unnamed-chunk-7-1.pdf, id=30, 433.62pt x 289.08pt>
-File: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simu
-late_files/figure-latex/unnamed-chunk-7-1.pdf Graphic file (type pdf)
-<use C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simul
-ate_files/figure-latex/unnamed-chunk-7-1.pdf>
-Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2a
-ac40af47f5.dir/simulate_files/figure-latex/unnamed-chunk-7-1.pdf  used on input
- line 184.
+<C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate_
+files/figure-latex/unnamed-chunk-4-1.pdf, id=3, 433.62pt x 289.08pt>
+File: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simu
+late_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (type pdf)
+<use C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simul
+ate_files/figure-latex/unnamed-chunk-4-1.pdf>
+Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-25
+68401b6de6.dir/simulate_files/figure-latex/unnamed-chunk-4-1.pdf  used on input
+ line 155.
 (pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
-<C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simulate_
-files/figure-latex/unnamed-chunk-8-1.pdf, id=31, 433.62pt x 289.08pt>
-File: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simu
-late_files/figure-latex/unnamed-chunk-8-1.pdf Graphic file (type pdf)
-<use C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simul
-ate_files/figure-latex/unnamed-chunk-8-1.pdf>
-Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2a
-ac40af47f5.dir/simulate_files/figure-latex/unnamed-chunk-8-1.pdf  used on input
- line 196.
-(pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
-[3 <C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simula
-te_files/figure-latex/unnamed-chunk-7-1.pdf>]
-<C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simulate_
-files/figure-latex/unnamed-chunk-9-1.pdf, id=42, 433.62pt x 289.08pt>
-File: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simu
-late_files/figure-latex/unnamed-chunk-9-1.pdf Graphic file (type pdf)
-<use C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simul
-ate_files/figure-latex/unnamed-chunk-9-1.pdf>
-Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2a
-ac40af47f5.dir/simulate_files/figure-latex/unnamed-chunk-9-1.pdf  used on input
- line 219.
-(pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
-[4 <C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simula
-te_files/figure-latex/unnamed-chunk-8-1.pdf>]
-Overfull \hbox (31.90988pt too wide) in paragraph at lines 221--222
-[]\T1/lmr/m/n/10 (-20) #\T1/lmtt/m/n/10 {r} #write.tree(p,\TS1/lmtt/m/n/10 '\T1
-/lmtt/m/n/10 tree.nwk\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 ) #p=read.tree(\TS1/lmtt
-/m/n/10 '\T1/lmtt/m/n/10 tree.nwk\TS1/lmtt/m/n/10 '\T1/lmtt/m/n/10 ) #ptree=ptr
-eeFromPhyloM(p,dateLastSample
- []
+[1
 
-<C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simulate_
-files/figure-latex/unnamed-chunk-11-1.pdf, id=53, 433.62pt x 289.08pt>
-File: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simu
-late_files/figure-latex/unnamed-chunk-11-1.pdf Graphic file (type pdf)
-<use C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simul
-ate_files/figure-latex/unnamed-chunk-11-1.pdf>
-Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2a
-ac40af47f5.dir/simulate_files/figure-latex/unnamed-chunk-11-1.pdf  used on inpu
+{C:/Users/Jake/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
+<C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate_
+files/figure-latex/unnamed-chunk-6-1.pdf, id=19, 433.62pt x 289.08pt>
+File: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simu
+late_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pdf)
+<use C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simul
+ate_files/figure-latex/unnamed-chunk-6-1.pdf>
+Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-25
+68401b6de6.dir/simulate_files/figure-latex/unnamed-chunk-6-1.pdf  used on input
+ line 180.
+(pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
+[2 <C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simula
+te_files/figure-latex/unnamed-chunk-4-1.pdf>]
+<C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate_
+files/figure-latex/unnamed-chunk-7-1.pdf, id=29, 433.62pt x 289.08pt>
+File: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simu
+late_files/figure-latex/unnamed-chunk-7-1.pdf Graphic file (type pdf)
+<use C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simul
+ate_files/figure-latex/unnamed-chunk-7-1.pdf>
+Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-25
+68401b6de6.dir/simulate_files/figure-latex/unnamed-chunk-7-1.pdf  used on input
+ line 192.
+(pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
+[3 <C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simula
+te_files/figure-latex/unnamed-chunk-6-1.pdf> <C:/Users/Jake/AppData/Local/Temp/
+Rtmpq4McKS/preview-2568401b6de6.dir/simulate_files/figure-latex/unnamed-chunk-7
+-1.pdf>]
+<C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate_
+files/figure-latex/unnamed-chunk-8-1.pdf, id=44, 433.62pt x 289.08pt>
+File: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simu
+late_files/figure-latex/unnamed-chunk-8-1.pdf Graphic file (type pdf)
+<use C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simul
+ate_files/figure-latex/unnamed-chunk-8-1.pdf>
+Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-25
+68401b6de6.dir/simulate_files/figure-latex/unnamed-chunk-8-1.pdf  used on input
+ line 202.
+(pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
+<C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate_
+files/figure-latex/unnamed-chunk-9-1.pdf, id=45, 433.62pt x 289.08pt>
+File: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simu
+late_files/figure-latex/unnamed-chunk-9-1.pdf Graphic file (type pdf)
+<use C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simul
+ate_files/figure-latex/unnamed-chunk-9-1.pdf>
+Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-25
+68401b6de6.dir/simulate_files/figure-latex/unnamed-chunk-9-1.pdf  used on input
+ line 214.
+(pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
+[4 <C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simula
+te_files/figure-latex/unnamed-chunk-8-1.pdf>]
+<C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate_
+files/figure-latex/unnamed-chunk-10-1.pdf, id=55, 433.62pt x 289.08pt>
+File: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simu
+late_files/figure-latex/unnamed-chunk-10-1.pdf Graphic file (type pdf)
+<use C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simul
+ate_files/figure-latex/unnamed-chunk-10-1.pdf>
+Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-25
+68401b6de6.dir/simulate_files/figure-latex/unnamed-chunk-10-1.pdf  used on inpu
 t line 237.
 (pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 239.
-[5 <C:/Users/Jake/AppData/Local/Temp/RtmpySvnsr/preview-2aac40af47f5.dir/simula
-te_files/figure-latex/unnamed-chunk-9-1.pdf>] [6 <C:/Users/Jake/AppData/Local/T
-emp/RtmpySvnsr/preview-2aac40af47f5.dir/simulate_files/figure-latex/unnamed-chu
-nk-11-1.pdf>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 239.
+[5 <C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simula
+te_files/figure-latex/unnamed-chunk-9-1.pdf>]
+<C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate_
+files/figure-latex/unnamed-chunk-13-1.pdf, id=66, 433.62pt x 289.08pt>
+File: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simu
+late_files/figure-latex/unnamed-chunk-13-1.pdf Graphic file (type pdf)
+<use C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simul
+ate_files/figure-latex/unnamed-chunk-13-1.pdf>
+Package pdftex.def Info: C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-25
+68401b6de6.dir/simulate_files/figure-latex/unnamed-chunk-13-1.pdf  used on inpu
+t line 276.
+(pdftex.def)             Requested size: 433.63878pt x 289.09251pt.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 278.
+[6 <C:/Users/Jake/AppData/Local/Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simula
+te_files/figure-latex/unnamed-chunk-10-1.pdf>] [7 <C:/Users/Jake/AppData/Local/
+Temp/Rtmpq4McKS/preview-2568401b6de6.dir/simulate_files/figure-latex/unnamed-ch
+unk-13-1.pdf>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 278.
 (simulate.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 239.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 239.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 278.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 278.
  ) 
 Here is how much of TeX's memory you used:
- 13593 strings out of 492970
- 200257 string characters out of 3135857
- 311346 words of memory out of 3000000
- 17217 multiletter control sequences out of 15000+200000
- 40061 words of font info for 72 fonts, out of 3000000 for 9000
+ 13624 strings out of 492970
+ 201114 string characters out of 3135857
+ 310411 words of memory out of 3000000
+ 17231 multiletter control sequences out of 15000+200000
+ 46517 words of font info for 79 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  35i,6n,38p,1074b,359s stack positions out of 5000i,500n,10000p,200000b,50000s
 {D:/Program Files/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ts1.enc}{D:/Program Files/
 MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.enc}{D:/Program Files/MiKTeX 2.9/fonts/enc/
 dvips/lm/lm-mathit.enc}{D:/Program Files/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.en
-c}<D:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmmi10.pfb><D:/Program Fil
-es/MiKTeX 2.9/fonts/type1/public/lm/lmr10.pfb><D:/Program Files/MiKTeX 2.9/font
-s/type1/public/lm/lmr12.pfb><D:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/
-lmr17.pfb><D:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmtt10.pfb>
-Output written on simulate.pdf (6 pages, 551846 bytes).
+c}<D:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmbx12.pfb><D:/Program Fil
+es/MiKTeX 2.9/fonts/type1/public/lm/lmmi10.pfb><D:/Program Files/MiKTeX 2.9/fon
+ts/type1/public/lm/lmr10.pfb><D:/Program Files/MiKTeX 2.9/fonts/type1/public/lm
+/lmr12.pfb><D:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmr17.pfb><D:/Pro
+gram Files/MiKTeX 2.9/fonts/type1/public/lm/lmtt10.pfb>
+Output written on simulate.pdf (7 pages, 380375 bytes).
 PDF statistics:
- 99 PDF objects out of 1000 (max. 8388607)
- 7 named destinations out of 1000 (max. 500000)
- 18463 words of extra memory for PDF output out of 20736 (max. 10000000)
+ 126 PDF objects out of 1000 (max. 8388607)
+ 12 named destinations out of 1000 (max. 500000)
+ 22580 words of extra memory for PDF output out of 24883 (max. 10000000)
 
