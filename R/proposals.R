@@ -4,7 +4,7 @@
 #' @param bn_weight Penalisation term for transmitting multiple lineages.
 #'
 #' @export
-add_transmission_3 <- function(ctree, bn_weight = 0.1) {
+add_transmission_4 <- function(ctree, bn_weight = 0.8) {
 
   # Extract ctree
   nam <- ctree$nam
@@ -31,21 +31,40 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
   host2 <- rep(host, length(leaves))
   host2[which(type == 2)] <- ctree[ctree[leaves[which(type == 2)], 2], 4]
 
+  unique_hosts <- unique(host2)
+  n_hosts <- length(unique_hosts)
+  hosts_count <- numeric(n_hosts)
+  hosts_type <- numeric(n_hosts)
+
+  for (i in 1:n_hosts) {
+
+    hosts_count[i] <- length(which(host2 == unique_hosts[i]))
+    hosts_type[i] <- type[which(host2 == unique_hosts[i])][1]
+
+  }
+
+
   # All rows assigned to host
   rows_host <- which(ctree[, 4] == host)
   R <- length(rows_host)
 
+
+
   # Active leaves for each row and corresponding time interval
-  active <- matrix(0, R, L)
+  down_leaves <- matrix(0, R, L)
+  down_hosts <- matrix(0, R, n_hosts)
   interval <- matrix(0, R, 2)
 
   for (l in 1:L) {
 
     r <- leaves[l]
+    h <- host2[l]
 
     repeat {
 
-      active[which(rows_host == r), l] <- 1
+      down_leaves[which(rows_host == r), l] <- 1
+      down_hosts[which(rows_host == r), which(unique_hosts == h)] <-
+        down_hosts[which(rows_host == r), which(unique_hosts == h)] + 1
 
       anc <- which(ctree[, 2] == r | ctree[, 3] == r)
 
@@ -65,125 +84,139 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
   }
 
+  clust_intervals <- sort(interval)
+  clust_intervals <- unique(clust_intervals)
+  clusters <- list()
 
-  # Extend active array to account for non-bottleneck combinations
-  active_ex <- active
+  poss_tr <- array(dim = c(0, 2))
 
-  # Branch lengths for possible combinations
-  len_ex <- interval[, 2] - interval[, 1]
+  for (i in 1:(length(clust_intervals) - 1)) {
 
-  # Set length to zero for invalid combinations
-  for (r in 1:R) {
+    start <- clust_intervals[i]
+    end <- clust_intervals[i + 1]
 
-    l1 <- which(active[r, ] == 1)
-    l2 <- which(active[r, ] == 0)
+    clusters_int <- list()
 
-    # Ensure samples of the same host are assigned to one host
-    if (length(host2[l1[which(type[l1] == 1)]]) > 0 & length(host2[l2[which(type[l2] == 1)]]) > 0) {
+    branches_todo <- which(!(interval[, 2] <= clust_intervals[i] | interval[, 1] >= clust_intervals[i + 1]))
 
-      if (any(host2[l1[which(type[l1] == 1)]] %in% host2[l2[which(type[l2] == 1)]])) {
+    j <- 1
 
-        len_ex[r] <- 0
+    repeat {
 
-      }
+      if (length(branches_todo) == 0) {
 
-    }
-
-    # Ensure transmitted lineages to the same host have a single infector
-    if (length(host2[l1[which(type[l1] == 2)]]) > 0 & length(host2[l2[which(type[l2] == 2)]]) > 0) {
-
-      if (any(host2[l1[which(type[l1] == 2)]] %in% host2[l2[which(type[l2] == 2)]])) {
-
-        len_ex[r] <- 0
+        break
 
       }
 
-    }
+      branches_inc <- branches_todo[1]
 
-  }
+      counts_inc <- down_hosts[branches_inc, ]
 
-  # Unique identifier for combinations
-  bin_ex <- numeric(R)
+      hosts_inc <- which(counts_inc > 0)
 
-  for (l in 1:L) {
+      obs_inc <- unique_hosts[hosts_inc[which(hosts_type[hosts_inc] == 1)]]
 
-    bin_ex <- bin_ex + active_ex[, l] * 2^(l - 1)
+      branches_todo <- branches_todo[-1]
 
-  }
+      repeat {
 
+        if (length(branches_todo) == 0) {
 
+          break
 
+        }
 
+        if (length(branches_todo) == 1) {
 
+          if (length(hosts_inc) == 1) {
 
-  temp_t <- min(interval[, 1])
-  temp_R <- which(interval[, 1] == temp_t)
+            to_add <- which(down_hosts[branches_todo, hosts_inc] > 0)
 
-
-  i <- length(temp_R)
-
-  ord_int <- order(interval)
-
-  repeat {
-
-    i <- i + 1
-
-    temp_s <- temp_t
-    temp_t <- interval[ord_int[i]]
-
-    if (temp_t > temp_s & length(temp_R) > 1) {
-
-      for (r in 2:length(temp_R)) {
-
-        combs <- combn(temp_R, r)
-
-        for (c in 1:dim(combs)[2]) {
-
-          # Included branches and leaves in this combination
-          inc_branches <- combs[, c]
-          inc_active <- apply(active[inc_branches,], 2, max)
-
-          # Do not include invalid combinations
-          leaves_1 <- which(inc_active == 1)
-          leaves_2 <- which(inc_active == 0)
-
-          # Ensure samples of the same host are assigned to one host
-          if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
-
-            if (any(host2[leaves_1[which(type[leaves_1] == 1)]] %in% host2[leaves_2[which(type[leaves_2] == 1)]])) {
-
-              next
-
-            }
-
-          }
-
-          # Ensure transmitted lineages to the same host have a single infector
-          if (length(host2[leaves_1[which(type[leaves_1] == 2)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 2)]]) > 0) {
-
-            if (any(host2[leaves_1[which(type[leaves_1] == 2)]] %in% host2[leaves_2[which(type[leaves_2] == 2)]])) {
-
-              next
-
-            }
-
-          }
-
-          # Unique identifier for combination
-          inc_bin <- sum(inc_active * 2^(0:(L - 1)))
-
-          # If combination already has weight
-          if (inc_bin %in% bin_ex) {
-
-            k <- which(bin_ex == inc_bin)
-            len_ex[k] <- len_ex[k] + (bn_weight ^ (r - 1)) * (temp_t - temp_s)
-
-            # If first time combination has occurred
           } else {
 
-            active_ex <- rbind(active_ex, inc_active)
-            len_ex <- c(len_ex, (bn_weight ^ (r - 1)) * (temp_t - temp_s))
-            bin_ex <- c(bin_ex, inc_bin)
+            to_add <- which(max(down_hosts[branches_todo, hosts_inc]) > 0)
+
+          }
+
+        } else {
+
+          if (length(hosts_inc) == 1) {
+
+            to_add <- which(down_hosts[branches_todo, hosts_inc] > 0)
+
+          } else {
+
+            to_add <- which(apply(down_hosts[branches_todo, hosts_inc], 1, max) > 0)
+
+          }
+
+        }
+
+        if (length(to_add) == 0) {
+
+          break
+
+        }
+
+        branches_inc <- c(branches_inc, branches_todo[to_add])
+
+        counts_inc <- apply(down_hosts[branches_inc, , drop = F], 2, sum)
+
+        hosts_inc <- which(counts_inc > 0)
+
+        obs_inc <- unique_hosts[hosts_inc[which(hosts_type[hosts_inc] == 1)]]
+
+        branches_todo <- branches_todo[which(!(branches_todo %in% branches_inc))]
+
+      }
+
+      if (all(counts_inc[hosts_inc] == hosts_count[hosts_inc]) &
+          length(obs_inc) < 2) {
+
+        clusters_int[[j]] <- list(branches = branches_inc,
+                                  counts = counts_inc,
+                                  hosts = hosts_inc,
+                                  bin = sum(2^hosts_inc),
+                                  obs = obs_inc)
+
+        j <- j + 1
+
+      }
+
+    }
+
+    clusters[[i]] <- clusters_int
+
+    if (length(clusters[[i]]) > 0) {
+
+      for (r in 1:length(clusters[[i]])) {
+
+        combs <- combn(length(clusters[[i]]), r)
+
+        for (j in 1:dim(combs)[2]) {
+
+          temp_branches <- c()
+          temp_bin <- 0
+          temp_obs <- c()
+
+          for (k in combs[, j]) {
+
+            temp_bin <- temp_bin + clusters[[i]][[k]]$bin
+            temp_branches <- c(temp_branches, clusters[[i]][[k]]$branches)
+            temp_obs <- c(temp_obs, clusters[[i]][[k]]$obs)
+
+          }
+
+          tr_ind <- which(poss_tr[, 1] == temp_bin)
+
+          if (length(tr_ind) == 0) {
+
+            poss_tr <- rbind(poss_tr, c(temp_bin, (end - start) * bn_weight ^ (length(temp_branches) - 1)))
+
+          } else {
+
+            poss_tr[tr_ind, 2] <- poss_tr[tr_ind, 2] + (end - start) * bn_weight ^ (length(temp_branches) - 1)
 
           }
 
@@ -193,32 +226,10 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
     }
 
-    if (ord_int[i] < dim(interval)[1]) {
-
-      temp_R <- c(temp_R, ord_int[i])
-
-    } else {
-
-      temp_R <- temp_R[-which(temp_R == ord_int[i] - dim(interval)[1])]
-
-    }
-
-    if (i == length(ord_int)) {
-
-      break
-
-    }
-
   }
 
-
-
-
-
-  # Normalise lengths (weights)
-  sum_len <- sum(len_ex)
-  norm_len <- len_ex / sum_len
-
+  sum_len <- sum(poss_tr[, 2])
+  norm_len <- poss_tr[, 2] / sum_len
 
   # Sample combination
   v <- 1
@@ -233,95 +244,49 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
   prop_density <- prop_density + log(norm_len[v])
 
-  tar_bin <- bin_ex[v]
-  tar_len <- len_ex[v]
+  tar_bin <- poss_tr[v, 1]
+  tar_len <- poss_tr[v, 2]
 
   # Sample transmission time
   u2l <- u2 * tar_len
   sam_time <- NA
 
+  for (i in 1:(length(clust_intervals) - 1)) {
 
-  for (r in 1:R) {
+    start <- clust_intervals[i]
+    end <- clust_intervals[i + 1]
 
-    temp_t <- min(interval[, 1])
-    temp_R <- which(interval[, 1] == temp_t)
+    if (length(clusters[[i]]) > 0) {
 
-    i <- length(temp_R)
+      for (r in 1:length(clusters[[i]])) {
 
-    repeat {
+        combs <- combn(length(clusters[[i]]), r)
 
-      i <- i + 1
+        for (j in 1:dim(combs)[2]) {
 
-      temp_s <- temp_t
-      temp_t <- interval[ord_int[i]]
+          temp_branches <- c()
+          temp_bin <- 0
+          temp_obs <- c()
 
-      if (temp_t > temp_s & length(temp_R) >= r) {
+          for (k in combs[, j]) {
 
-        if (length(temp_R) > 1) {
-
-          combs <- combn(temp_R, r)
-
-        } else {
-
-          combs <- t(temp_R)
-
-        }
-
-        for (c in 1:dim(combs)[2]) {
-
-          # Included branches and leaves in this combination
-          inc_branches <- combs[, c]
-
-          if (r > 1) {
-
-            inc_active <- apply(active[inc_branches,], 2, max)
-
-          } else {
-
-            inc_active <- active[inc_branches, ]
+            temp_bin <- temp_bin + clusters[[i]][[k]]$bin
+            temp_branches <- c(temp_branches, clusters[[i]][[k]]$branches)
+            temp_obs <- c(temp_obs, clusters[[i]][[k]]$obs)
 
           }
 
-          # Do not include invalid combinations
-          leaves_1 <- which(inc_active == 1)
-          leaves_2 <- which(inc_active == 0)
+          if (temp_bin == tar_bin) {
 
-          # Ensure samples of the same host are assigned to one host
-          if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
+            temp_len <- (end - start) * bn_weight ^ (length(temp_branches) - 1)
 
-            if (any(host2[leaves_1[which(type[leaves_1] == 1)]] %in% host2[leaves_2[which(type[leaves_2] == 1)]])) {
+            if (temp_len < u2l) {
 
-              next
-
-            }
-
-          }
-
-          # Ensure transmitted lineages to the same host have a single infector
-          if (length(host2[leaves_1[which(type[leaves_1] == 2)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 2)]]) > 0) {
-
-            if (any(host2[leaves_1[which(type[leaves_1] == 2)]] %in% host2[leaves_2[which(type[leaves_2] == 2)]])) {
-
-              next
-
-            }
-
-          }
-
-          # Unique identifier for combination
-          inc_bin <- sum(inc_active * 2^(0:(L - 1)))
-
-          if (inc_bin == tar_bin) {
-
-            inc_len <- (bn_weight ^ (r - 1)) * (temp_t - temp_s)
-
-            if (inc_len < u2l) {
-
-              u2l <- u2l - inc_len
+              u2l <- u2l - temp_len
 
             } else {
 
-              sam_time <- temp_s + u2l / (bn_weight ^ (r - 1))
+              sam_time <- start + u2l / (bn_weight ^ (length(temp_branches) - 1))
               break
 
             }
@@ -330,21 +295,11 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
         }
 
-      }
+        if (!is.na(sam_time)) {
 
-      if (ord_int[i] < dim(interval)[1]) {
+          break
 
-        temp_R <- c(temp_R, ord_int[i])
-
-      } else {
-
-        temp_R <- temp_R[-which(temp_R == ord_int[i] - dim(interval)[1])]
-
-      }
-
-      if (i == length(ord_int) | !is.na(sam_time)) {
-
-        break
+        }
 
       }
 
@@ -358,10 +313,9 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
   }
 
+  prop_density <- prop_density + log((bn_weight ^ (length(temp_branches) - 1)) / tar_len)
 
-  prop_density <- prop_density + log((bn_weight ^ (r - 1)) / tar_len)
-
-  tr_lin <- r
+  tr_lin <- length(temp_branches)
 
   # Update ctree
   old_host <- host
@@ -373,8 +327,7 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
   }
 
-
-  rhl <- rows_host[inc_branches]
+  rhl <- rows_host[temp_branches]
 
   repeat {
 
@@ -410,8 +363,7 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
   }
 
-
-  rhl <- sort(rows_host[inc_branches], decreasing = T)
+  rhl <- sort(rows_host[temp_branches], decreasing = T)
 
   tar_row <- min(which(ctree[, 1] < sam_time & ctree[, 2] > 0))
 
@@ -459,13 +411,14 @@ add_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
 
 
+
 #' Proposal to remove a transmission
 #'
 #' @param ctree Current coloured tree.
 #' @param bn_weight Penalisation term for transmitting multiple lineages.
 #'
 #' @export
-remove_transmission_3 <- function(ctree, bn_weight = 0.1) {
+remove_transmission_4 <- function(ctree, bn_weight = 0.8) {
 
   # Extract ctree
   nam <- ctree$nam
@@ -577,21 +530,37 @@ remove_transmission_3 <- function(ctree, bn_weight = 0.1) {
   host2 <- rep(host, length(leaves))
   host2[which(type == 2)] <- ctree[ctree[leaves[which(type == 2)], 2], 4]
 
+  unique_hosts <- unique(host2)
+  n_hosts <- length(unique_hosts)
+  hosts_count <- numeric(n_hosts)
+  hosts_type <- numeric(n_hosts)
+
+  for (i in 1:n_hosts) {
+
+    hosts_count[i] <- length(which(host2 == unique_hosts[i]))
+    hosts_type[i] <- type[which(host2 == unique_hosts[i])][1]
+
+  }
+
   # All rows assigned to host
   rows_host <- which(ctree[, 4] == host)
   R <- length(rows_host)
 
   # Active leaves for each row and corresponding time interval
-  active <- matrix(0, R, L)
+  down_leaves <- matrix(0, R, L)
+  down_hosts <- matrix(0, R, n_hosts)
   interval <- matrix(0, R, 2)
 
   for (l in 1:L) {
 
     r <- leaves[l]
+    h <- host2[l]
 
     repeat {
 
-      active[which(rows_host == r), l] <- 1
+      down_leaves[which(rows_host == r), l] <- 1
+      down_hosts[which(rows_host == r), which(unique_hosts == h)] <-
+        down_hosts[which(rows_host == r), which(unique_hosts == h)] + 1
 
       anc <- which(ctree[, 2] == r | ctree[, 3] == r)
 
@@ -612,122 +581,139 @@ remove_transmission_3 <- function(ctree, bn_weight = 0.1) {
   }
 
 
-  # Extend active array to account for non-bottleneck combinations
-  active_ex <- active
+  clust_intervals <- sort(interval)
+  clust_intervals <- unique(clust_intervals)
+  clusters <- list()
 
-  # Branch lengths for possible combinations
-  len_ex <- interval[, 2] - interval[, 1]
+  poss_tr <- array(dim = c(0, 2))
 
-  # Set length to zero for invalid combinations
-  for (r in 1:R) {
+  for (i in 1:(length(clust_intervals) - 1)) {
 
-    l1 <- which(active[r, ] == 1)
-    l2 <- which(active[r, ] == 0)
+    start <- clust_intervals[i]
+    end <- clust_intervals[i + 1]
 
-    # Ensure samples of the same host are assigned to one host
-    if (length(host2[l1[which(type[l1] == 1)]]) > 0 & length(host2[l2[which(type[l2] == 1)]]) > 0) {
+    clusters_int <- list()
 
-      if (any(host2[l1[which(type[l1] == 1)]] %in% host2[l2[which(type[l2] == 1)]])) {
+    branches_todo <- which(!(interval[, 2] <= clust_intervals[i] | interval[, 1] >= clust_intervals[i + 1]))
 
-        len_ex[r] <- 0
+    j <- 1
 
-      }
+    repeat {
 
-    }
+      if (length(branches_todo) == 0) {
 
-    # Ensure transmitted lineages to the same host have a single infector
-    if (length(host2[l1[which(type[l1] == 2)]]) > 0 & length(host2[l2[which(type[l2] == 2)]]) > 0) {
-
-      if (any(host2[l1[which(type[l1] == 2)]] %in% host2[l2[which(type[l2] == 2)]])) {
-
-        len_ex[r] <- 0
+        break
 
       }
 
-    }
+      branches_inc <- branches_todo[1]
 
-  }
+      counts_inc <- down_hosts[branches_inc, ]
 
-  # Unique identifier for combinations
-  bin_ex <- numeric(R)
+      hosts_inc <- which(counts_inc > 0)
 
-  for (l in 1:L) {
+      obs_inc <- unique_hosts[hosts_inc[which(hosts_type[hosts_inc] == 1)]]
 
-    bin_ex <- bin_ex + active_ex[, l] * 2^(l - 1)
+      branches_todo <- branches_todo[-1]
 
-  }
+      repeat {
 
-  orig_bin <- sum(as.numeric(orig_host[leaves] == sam_host2) * 2 ^ (0:(L - 1)))
+        if (length(branches_todo) == 0) {
 
+          break
 
+        }
 
-  temp_t <- min(interval[, 1])
-  temp_R <- which(interval[, 1] == temp_t)
+        if (length(branches_todo) == 1) {
 
-  i <- length(temp_R)
+          if (length(hosts_inc) == 1) {
 
-  ord_int <- order(interval)
+            to_add <- which(down_hosts[branches_todo, hosts_inc] > 0)
 
-  repeat {
-
-    i <- i + 1
-
-    temp_s <- temp_t
-    temp_t <- interval[ord_int[i]]
-
-    if (temp_t > temp_s & length(temp_R) > 1) {
-
-      for (r in 2:length(temp_R)) {
-
-        combs <- combn(temp_R, r)
-
-        for (c in 1:dim(combs)[2]) {
-
-          # Included branches and leaves in this combination
-          inc_branches <- combs[, c]
-          inc_active <- apply(active[inc_branches,], 2, max)
-
-          # Do not include invalid combinations
-          leaves_1 <- which(inc_active == 1)
-          leaves_2 <- which(inc_active == 0)
-
-          # Ensure samples of the same host are assigned to one host
-          if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
-
-            if (any(host2[leaves_1[which(type[leaves_1] == 1)]] %in% host2[leaves_2[which(type[leaves_2] == 1)]])) {
-
-              next
-
-            }
-
-          }
-
-          # Ensure transmitted lineages to the same host have a single infector
-          if (length(host2[leaves_1[which(type[leaves_1] == 2)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 2)]]) > 0) {
-
-            if (any(host2[leaves_1[which(type[leaves_1] == 2)]] %in% host2[leaves_2[which(type[leaves_2] == 2)]])) {
-
-              next
-
-            }
-
-          }
-
-          # Unique identifier for combination
-          inc_bin <- sum(inc_active * 2^(0:(L - 1)))
-
-          # If combination already has weight
-          if (inc_bin %in% bin_ex) {
-
-            k <- which(bin_ex == inc_bin)
-            len_ex[k] <- len_ex[k] + (bn_weight ^ (r - 1)) * (temp_t - temp_s)
-
-            # If first time combination has occurred
           } else {
 
-            active_ex <- rbind(active_ex, inc_active)
-            len_ex <- c(len_ex, (bn_weight ^ (r - 1)) * (temp_t - temp_s))
-            bin_ex <- c(bin_ex, inc_bin)
+            to_add <- which(max(down_hosts[branches_todo, hosts_inc]) > 0)
+
+          }
+
+        } else {
+
+          if (length(hosts_inc) == 1) {
+
+            to_add <- which(down_hosts[branches_todo, hosts_inc] > 0)
+
+          } else {
+
+            to_add <- which(apply(down_hosts[branches_todo, hosts_inc], 1, max) > 0)
+
+          }
+
+        }
+
+        if (length(to_add) == 0) {
+
+          break
+
+        }
+
+        branches_inc <- c(branches_inc, branches_todo[to_add])
+
+        counts_inc <- apply(down_hosts[branches_inc, , drop = F], 2, sum)
+
+        hosts_inc <- which(counts_inc > 0)
+
+        obs_inc <- unique_hosts[hosts_inc[which(hosts_type[hosts_inc] == 1)]]
+
+        branches_todo <- branches_todo[which(!(branches_todo %in% branches_inc))]
+
+      }
+
+      if (all(counts_inc[hosts_inc] == hosts_count[hosts_inc]) &
+          length(obs_inc) < 2) {
+
+        clusters_int[[j]] <- list(branches = branches_inc,
+                                  counts = counts_inc,
+                                  hosts = hosts_inc,
+                                  bin = sum(2^hosts_inc),
+                                  obs = obs_inc)
+
+        j <- j + 1
+
+      }
+
+    }
+
+    clusters[[i]] <- clusters_int
+
+    if (length(clusters[[i]]) > 0) {
+
+      for (r in 1:length(clusters[[i]])) {
+
+        combs <- combn(length(clusters[[i]]), r)
+
+        for (j in 1:dim(combs)[2]) {
+
+          temp_branches <- c()
+          temp_bin <- 0
+          temp_obs <- c()
+
+          for (k in combs[, j]) {
+
+            temp_bin <- temp_bin + clusters[[i]][[k]]$bin
+            temp_branches <- c(temp_branches, clusters[[i]][[k]]$branches)
+            temp_obs <- c(temp_obs, clusters[[i]][[k]]$obs)
+
+          }
+
+          tr_ind <- which(poss_tr[, 1] == temp_bin)
+
+          if (length(tr_ind) == 0) {
+
+            poss_tr <- rbind(poss_tr, c(temp_bin, (end - start) * bn_weight ^ (length(temp_branches) - 1)))
+
+          } else {
+
+            poss_tr[tr_ind, 2] <- poss_tr[tr_ind, 2] + (end - start) * bn_weight ^ (length(temp_branches) - 1)
 
           }
 
@@ -737,34 +723,18 @@ remove_transmission_3 <- function(ctree, bn_weight = 0.1) {
 
     }
 
-    if (ord_int[i] < dim(interval)[1]) {
-
-      temp_R <- c(temp_R, ord_int[i])
-
-    } else {
-
-      temp_R <- temp_R[-which(temp_R == ord_int[i] - dim(interval)[1])]
-
-    }
-
-    if (i == length(ord_int)) {
-
-      break
-
-    }
-
   }
 
+  sum_len <- sum(poss_tr[, 2])
+  norm_len <- poss_tr[, 2] / sum_len
 
-  # Normalise lengths (weights)
-  sum_len <- sum(len_ex)
-  norm_len <- len_ex / sum_len
+  orig_bin <- sum(as.numeric(unique_hosts %in% unique(host2[orig_host[leaves] == sam_host2])) * 2 ^ (1:length(unique_hosts)))
 
-  v <- which(bin_ex == orig_bin)
+  v <- which(poss_tr[, 1] == orig_bin)
 
   rev_density <- rev_density + log(norm_len[v])
 
-  rev_density <- rev_density + log((bn_weight ^ (length(sam_tr_ex) - 1)) / len_ex[v])
+  rev_density <- rev_density + log((bn_weight ^ (length(sam_tr_ex) - 1)) / poss_tr[v, 2])
 
   # Order hosts
   ctree <- order_hosts(ctree)
@@ -788,7 +758,7 @@ remove_transmission_3 <- function(ctree, bn_weight = 0.1) {
 #' @param delta Proposal magnitude when moving the root transmission.
 #'
 #' @export
-remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
+remove_add_4 <- function(ctree, bn_weight = 0.8, delta = 1) {
 
   # Random numbers for sampling
   u1 <- runif(1)
@@ -809,6 +779,22 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
   sam_time <- ctree[sam_ct, 1]
   sam_host1 <- ctree[sam_ct, 4]
   sam_host2 <- ctree[ctree[sam_ct, 2], 4]
+
+  # Observed hosts
+  obs_idx <- which(ctree[, 2] == 0 & ctree[, 3] == 0)
+  obs_host <- ctree[obs_idx, 4]
+
+  # Note if both hosts are observed
+  if (sam_host1 %in% obs_host & sam_host2 %in% obs_host) {
+
+    both_obs <- 1
+
+  } else {
+
+    both_obs <- 0
+
+  }
+
 
   # Propose new root time
   if (sam_host1 == 0) {
@@ -898,21 +884,37 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
     host2 <- orig_host[leaves]
     host2[which(type == 2)] <- ctree[ctree[leaves[which(type == 2)], 2], 4]
 
+    unique_hosts <- unique(host2)
+    n_hosts <- length(unique_hosts)
+    hosts_count <- numeric(n_hosts)
+    hosts_type <- numeric(n_hosts)
+
+    for (i in 1:n_hosts) {
+
+      hosts_count[i] <- length(which(host2 == unique_hosts[i]))
+      hosts_type[i] <- type[which(host2 == unique_hosts[i])][1]
+
+    }
+
     # All rows assigned to host
     rows_host <- which(ctree[, 4] == sam_host1)
     R <- length(rows_host)
 
     # Active leaves for each row and corresponding time interval
-    active <- matrix(0, R, L)
+    down_leaves <- matrix(0, R, L)
+    down_hosts <- matrix(0, R, n_hosts)
     interval <- matrix(0, R, 2)
 
     for (l in 1:L) {
 
       r <- leaves[l]
+      h <- host2[l]
 
       repeat {
 
-        active[which(rows_host == r), l] <- 1
+        down_leaves[which(rows_host == r), l] <- 1
+        down_hosts[which(rows_host == r), which(unique_hosts == h)] <-
+          down_hosts[which(rows_host == r), which(unique_hosts == h)] + 1
 
         anc <- which(ctree[, 2] == r | ctree[, 3] == r)
 
@@ -932,164 +934,144 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     }
 
-    # Extend active array to account for non-bottleneck combinations
-    active_ex <- active
 
-    # Branch lengths for possible combinations
-    len_ex <- interval[, 2] - interval[, 1]
+    clust_intervals <- sort(interval)
+    clust_intervals <- unique(clust_intervals)
+    clusters <- list()
 
-    # Set length to zero for invalid combinations
-    for (r in 1:R) {
+    poss_tr <- array(dim = c(0, 2))
 
-      l1 <- which(active[r, ] == 1)
-      l2 <- which(active[r, ] == 0)
+    for (i in 1:(length(clust_intervals) - 1)) {
 
-      # Ensure samples of the same host are assigned to one host
-      if (length(host2[l1[which(type[l1] == 1)]]) > 0 & length(host2[l2[which(type[l2] == 1)]]) > 0) {
+      start <- clust_intervals[i]
+      end <- clust_intervals[i + 1]
 
-        if (any(host2[l1[which(type[l1] == 1)]] %in% host2[l2[which(type[l2] == 1)]])) {
+      clusters_int <- list()
 
-          len_ex[r] <- 0
+      branches_todo <- which(!(interval[, 2] <= clust_intervals[i] | interval[, 1] >= clust_intervals[i + 1]))
 
-        }
+      j <- 1
 
-      }
+      repeat {
 
-      # Ensure transmitted lineages to the same host have a single infector
-      if (length(host2[l1[which(type[l1] == 2)]]) > 0 & length(host2[l2[which(type[l2] == 2)]]) > 0) {
+        if (length(branches_todo) == 0) {
 
-        if (any(host2[l1[which(type[l1] == 2)]] %in% host2[l2[which(type[l2] == 2)]])) {
-
-          len_ex[r] <- 0
+          break
 
         }
 
-      }
+        branches_inc <- branches_todo[1]
 
-      # Ensure samples from different hosts are not assigned to a single host
-      if (length(host2[l1[which(type[l1] == 1)]]) > 0) {
+        counts_inc <- down_hosts[branches_inc, ]
 
-        if (length(unique(host2[l1[which(type[l1] == 1)]])) > 1) {
+        hosts_inc <- which(counts_inc > 0)
 
-          len_ex[r] <- 0
+        obs_inc <- unique_hosts[hosts_inc[which(hosts_type[hosts_inc] == 1)]]
 
-        }
+        branches_todo <- branches_todo[-1]
 
-      }
+        repeat {
 
-      if (length(host2[l2[which(type[l2] == 1)]]) > 0) {
+          if (length(branches_todo) == 0) {
 
-        if (length(unique(host2[l2[which(type[l2] == 1)]])) > 1) {
+            break
 
-          len_ex[r] <- 0
+          }
 
-        }
+          if (length(branches_todo) == 1) {
 
-      }
+            if (length(hosts_inc) == 1) {
 
-    }
+              to_add <- which(down_hosts[branches_todo, hosts_inc] > 0)
 
-    # Unique identifier for combinations
-    bin_ex <- numeric(R)
-
-    for (l in 1:L) {
-
-      bin_ex <- bin_ex + active_ex[, l] * 2^(l - 1)
-
-    }
-
-    orig_bin <- sum(as.numeric(orig_host[leaves] == sam_host2) * 2 ^ (0:(L - 1)))
-
-
-
-    temp_t <- min(interval[, 1])
-    temp_R <- which(interval[, 1] == temp_t)
-
-    i <- length(temp_R)
-
-    ord_int <- order(interval)
-
-    repeat {
-
-      i <- i + 1
-
-      temp_s <- temp_t
-      temp_t <- interval[ord_int[i]]
-
-      if (temp_t > temp_s & length(temp_R) > 1) {
-
-        for (r in 2:length(temp_R)) {
-
-          combs <- combn(temp_R, r)
-
-          for (c in 1:dim(combs)[2]) {
-
-            # Included branches and leaves in this combination
-            inc_branches <- combs[, c]
-            inc_active <- apply(active[inc_branches,], 2, max)
-
-            # Do not include invalid combinations
-            leaves_1 <- which(inc_active == 1)
-            leaves_2 <- which(inc_active == 0)
-
-            # Ensure samples of the same host are assigned to one host
-            if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
-
-              if (any(host2[leaves_1[which(type[leaves_1] == 1)]] %in% host2[leaves_2[which(type[leaves_2] == 1)]])) {
-
-                next
-
-              }
-
-            }
-
-            # Ensure transmitted lineages to the same host have a single infector
-            if (length(host2[leaves_1[which(type[leaves_1] == 2)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 2)]]) > 0) {
-
-              if (any(host2[leaves_1[which(type[leaves_1] == 2)]] %in% host2[leaves_2[which(type[leaves_2] == 2)]])) {
-
-                next
-
-              }
-
-            }
-
-            # Ensure samples from different hosts are not assigned to a single host
-            if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0) {
-
-              if (length(unique(host2[leaves_1[which(type[leaves_1] == 1)]])) > 1) {
-
-                next
-
-              }
-
-            }
-
-            if (length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
-
-              if (length(unique(host2[leaves_2[which(type[leaves_2] == 1)]])) > 1) {
-
-                next
-
-              }
-
-            }
-
-            # Unique identifier for combination
-            inc_bin <- sum(inc_active * 2^(0:(L - 1)))
-
-            # If combination already has weight
-            if (inc_bin %in% bin_ex) {
-
-              k <- which(bin_ex == inc_bin)
-              len_ex[k] <- len_ex[k] + (bn_weight ^ (r - 1)) * (temp_t - temp_s)
-
-              # If first time combination has occurred
             } else {
 
-              active_ex <- rbind(active_ex, inc_active)
-              len_ex <- c(len_ex, (bn_weight ^ (r - 1)) * (temp_t - temp_s))
-              bin_ex <- c(bin_ex, inc_bin)
+              to_add <- which(max(down_hosts[branches_todo, hosts_inc]) > 0)
+
+            }
+
+          } else {
+
+            if (length(hosts_inc) == 1) {
+
+              to_add <- which(down_hosts[branches_todo, hosts_inc] > 0)
+
+            } else {
+
+              to_add <- which(apply(down_hosts[branches_todo, hosts_inc], 1, max) > 0)
+
+            }
+
+          }
+
+          if (length(to_add) == 0) {
+
+            break
+
+          }
+
+          branches_inc <- c(branches_inc, branches_todo[to_add])
+
+          counts_inc <- apply(down_hosts[branches_inc, , drop = F], 2, sum)
+
+          hosts_inc <- which(counts_inc > 0)
+
+          obs_inc <- unique_hosts[hosts_inc[which(hosts_type[hosts_inc] == 1)]]
+
+          branches_todo <- branches_todo[which(!(branches_todo %in% branches_inc))]
+
+        }
+
+        if (all(counts_inc[hosts_inc] == hosts_count[hosts_inc]) &
+            length(obs_inc) < 2) {
+
+          clusters_int[[j]] <- list(branches = branches_inc,
+                                    counts = counts_inc,
+                                    hosts = hosts_inc,
+                                    bin = sum(2^hosts_inc),
+                                    obs = obs_inc)
+
+          j <- j + 1
+
+        }
+
+      }
+
+      clusters[[i]] <- clusters_int
+
+      if (length(clusters[[i]]) > 0) {
+
+        for (r in 1:length(clusters[[i]])) {
+
+          combs <- combn(length(clusters[[i]]), r)
+
+          for (j in 1:dim(combs)[2]) {
+
+            temp_branches <- c()
+            temp_bin <- 0
+            temp_obs <- c()
+
+            for (k in combs[, j]) {
+
+              temp_bin <- temp_bin + clusters[[i]][[k]]$bin
+              temp_branches <- c(temp_branches, clusters[[i]][[k]]$branches)
+              temp_obs <- c(temp_obs, clusters[[i]][[k]]$obs)
+
+            }
+
+            if (both_obs == 0 | length(temp_obs) == 1) {
+
+              tr_ind <- which(poss_tr[, 1] == temp_bin)
+
+              if (length(tr_ind) == 0) {
+
+                poss_tr <- rbind(poss_tr, c(temp_bin, (end - start) * bn_weight ^ (length(temp_branches) - 1)))
+
+              } else {
+
+                poss_tr[tr_ind, 2] <- poss_tr[tr_ind, 2] + (end - start) * bn_weight ^ (length(temp_branches) - 1)
+
+              }
 
             }
 
@@ -1099,31 +1081,14 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
 
       }
 
-      if (ord_int[i] < dim(interval)[1]) {
-
-        temp_R <- c(temp_R, ord_int[i])
-
-      } else {
-
-        temp_R <- temp_R[-which(temp_R == ord_int[i] - dim(interval)[1])]
-
-      }
-
-      if (i == length(ord_int)) {
-
-        break
-
-      }
-
     }
 
+    sum_len <- sum(poss_tr[, 2])
+    norm_len <- poss_tr[, 2] / sum_len
 
+    orig_bin <- sum(as.numeric(unique_hosts %in% unique(host2[orig_host[leaves] == sam_host2])) * 2 ^ (1:length(unique_hosts)))
 
-    sum_len <- sum(len_ex)
-    norm_len <- len_ex / sum_len
-
-
-    # Sample transmissions
+    # Sample combination
     v <- 1
     s <- norm_len[v]
 
@@ -1136,119 +1101,54 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     prop_density <- prop_density + log(norm_len[v])
 
-    tar_bin <- bin_ex[v]
-    tar_len <- len_ex[v]
+    tar_bin <- poss_tr[v, 1]
+    tar_len <- poss_tr[v, 2]
 
     # Sample transmission time
     u2l <- u2 * tar_len
     sam_time <- NA
 
+    for (i in 1:(length(clust_intervals) - 1)) {
 
+      start <- clust_intervals[i]
+      end <- clust_intervals[i + 1]
 
+      if (length(clusters[[i]]) > 0) {
 
-    for (r in 1:R) {
+        for (r in 1:length(clusters[[i]])) {
 
-      temp_t <- min(interval[, 1])
-      temp_R <- which(interval[, 1] == temp_t)
+          combs <- combn(length(clusters[[i]]), r)
 
-      i <- length(temp_R)
+          for (j in 1:dim(combs)[2]) {
 
-      repeat {
+            temp_branches <- c()
+            temp_bin <- 0
+            temp_obs <- c()
 
-        i <- i + 1
+            for (k in combs[, j]) {
 
-        temp_s <- temp_t
-        temp_t <- interval[ord_int[i]]
-
-        if (temp_t > temp_s & length(temp_R) >= r) {
-
-          if (length(temp_R) > 1) {
-
-            combs <- combn(temp_R, r)
-
-          } else {
-
-            combs <- t(temp_R)
-
-          }
-
-          for (c in 1:dim(combs)[2]) {
-
-            # Included branches and leaves in this combination
-            inc_branches <- combs[, c]
-
-            if (r > 1) {
-
-              inc_active <- apply(active[inc_branches,], 2, max)
-
-            } else {
-
-              inc_active <- active[inc_branches, ]
+              temp_bin <- temp_bin + clusters[[i]][[k]]$bin
+              temp_branches <- c(temp_branches, clusters[[i]][[k]]$branches)
+              temp_obs <- c(temp_obs, clusters[[i]][[k]]$obs)
 
             }
 
-            # Do not include invalid combinations
-            leaves_1 <- which(inc_active == 1)
-            leaves_2 <- which(inc_active == 0)
+            if (both_obs == 0 | length(temp_obs) == 1) {
 
-            # Ensure samples of the same host are assigned to one host
-            if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
+              if (temp_bin == tar_bin) {
 
-              if (any(host2[leaves_1[which(type[leaves_1] == 1)]] %in% host2[leaves_2[which(type[leaves_2] == 1)]])) {
+                temp_len <- (end - start) * bn_weight ^ (length(temp_branches) - 1)
 
-                next
+                if (temp_len < u2l) {
 
-              }
+                  u2l <- u2l - temp_len
 
-            }
+                } else {
 
-            # Ensure transmitted lineages to the same host have a single infector
-            if (length(host2[leaves_1[which(type[leaves_1] == 2)]]) > 0 & length(host2[leaves_2[which(type[leaves_2] == 2)]]) > 0) {
+                  sam_time <- start + u2l / (bn_weight ^ (length(temp_branches) - 1))
+                  break
 
-              if (any(host2[leaves_1[which(type[leaves_1] == 2)]] %in% host2[leaves_2[which(type[leaves_2] == 2)]])) {
-
-                next
-
-              }
-
-            }
-
-            # Ensure samples from different hosts are not assigned to a single host
-            if (length(host2[leaves_1[which(type[leaves_1] == 1)]]) > 0) {
-
-              if (length(unique(host2[leaves_1[which(type[leaves_1] == 1)]])) > 1) {
-
-                next
-
-              }
-
-            }
-
-            if (length(host2[leaves_2[which(type[leaves_2] == 1)]]) > 0) {
-
-              if (length(unique(host2[leaves_2[which(type[leaves_2] == 1)]])) > 1) {
-
-                next
-
-              }
-
-            }
-
-            # Unique identifier for combination
-            inc_bin <- sum(inc_active * 2^(0:(L - 1)))
-
-            if (inc_bin == tar_bin) {
-
-              inc_len <- (bn_weight ^ (r - 1)) * (temp_t - temp_s)
-
-              if (inc_len < u2l) {
-
-                u2l <- u2l - inc_len
-
-              } else {
-
-                sam_time <- temp_s + u2l / (bn_weight ^ (r - 1))
-                break
+                }
 
               }
 
@@ -1256,21 +1156,11 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
 
           }
 
-        }
+          if (!is.na(sam_time)) {
 
-        if (ord_int[i] < dim(interval)[1]) {
+            break
 
-          temp_R <- c(temp_R, ord_int[i])
-
-        } else {
-
-          temp_R <- temp_R[-which(temp_R == ord_int[i] - dim(interval)[1])]
-
-        }
-
-        if (i == length(ord_int) | !is.na(sam_time)) {
-
-          break
+          }
 
         }
 
@@ -1284,19 +1174,18 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
 
     }
 
+    prop_density <- prop_density + log((bn_weight ^ (length(temp_branches) - 1)) / tar_len)
 
-    prop_density <- prop_density + log((bn_weight ^ (r - 1)) / tar_len)
+    rev_density <- log(length(temp_branches) / (length(tr_idx) - length(sam_tr_ex) + length(temp_branches)))
 
-    rev_density <- log(r / (length(tr_idx) - length(sam_tr_ex) + r))
-
-    v <- which(bin_ex == orig_bin)
+    v <- which(poss_tr[, 1] == orig_bin)
 
     rev_density <- rev_density + log(norm_len[v])
 
-    rev_density <- rev_density + log((bn_weight ^ (length(sam_tr_ex) - 1)) / len_ex[v])
+    rev_density <- rev_density + log((bn_weight ^ (length(sam_tr_ex) - 1)) / poss_tr[v, 2])
 
     # Update ctree
-    rhl <- rows_host[inc_branches]
+    rhl <- rows_host[temp_branches]
 
     repeat {
 
@@ -1333,7 +1222,7 @@ remove_add_3 <- function(ctree, bn_weight = 0.1, delta = 1) {
     }
 
 
-    rhl <- sort(rows_host[inc_branches], decreasing = T)
+    rhl <- sort(rows_host[temp_branches], decreasing = T)
 
     tar_row <- min(which(ctree[, 1] < sam_time & ctree[, 2] > 0))
 
