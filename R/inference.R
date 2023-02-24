@@ -36,9 +36,9 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
                          w.mean = NA, w.std = NA, ws.mean = NA, ws.std = NA, mcmcIterations = 1000,
                          thinning = 1, tree_updates = 1, start_const = 2, start_rate = 2, startOff.r = 1, startOff.p = 0.5,
                          startPi = 0.5, updateconst = TRUE, updaterate = TRUE, updateOff.r = TRUE, updateOff.p = FALSE,
-                         updatePi = TRUE, qconst = NA, qrate = NA, qOff.r = NA, qOff.p = NA, qPi = NA,
+                         updatePi = TRUE, qconst = NA, qrate = NA, qcr = NA, qOff.r = NA, qOff.p = NA, qPi = NA,
                          bw = 0.8, rd = 1, startCTree = NA, updateTTree = TRUE, dateS = -Inf, dateT = Inf,
-                        delta = 1 / 365, verbose = F) {
+                        delta = NA, verbose = F) {
 
   ptree$ptree[, 1] <- ptree$ptree[, 1] + runif(nrow(ptree$ptree)) * 1e-10 #Ensure that all leaves have unique times
 
@@ -106,6 +106,12 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
   }
 
+  if (is.na(qcr)) {
+
+    qcr <- 0.5
+
+  }
+
   if (is.na(qOff.r)) {
 
     qOff.r <- 0.5
@@ -120,7 +126,13 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
   if (is.na(qPi)) {
 
-    qPi <- 1
+    qPi <- 0.5
+
+  }
+
+  if (is.na(delta)) {
+
+    delta <- 0.001 * (max(ptree$ptree[, 1]) - min(ptree$ptree[, 1]))
 
   }
 
@@ -152,7 +164,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
   pTTree <- log_lik_ttree(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale,
                           ws.shape, ws.scale, dateS, dateT, delta, NA)
 
-  pPTree <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate)
+  pPTree <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate, NA)
 
   if (verbose == F) {
 
@@ -246,19 +258,22 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
           pTTree_part2 <- log_lik_ttree(ttree2, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
                                         ws.scale, dateS, dateT, delta, proptree$prop_hosts)
 
+          pPTree_part <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate, proptree$curr_hosts)
+
+          pPTree_part2 <- log_lik_ptree_given_ctree(ctree2, lm_const, lm_rate, proptree$prop_hosts)
 
           #pTTree2 <- log_lik_ttree(ttree2, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
           #                        ws.scale, dateS, dateT, delta)
 
-          pPTree2 <- log_lik_ptree_given_ctree(ctree2, lm_const, lm_rate)
+          #pPTree2 <- log_lik_ptree_given_ctree(ctree2, lm_const, lm_rate)
 
 
-          if (log(runif(1)) < (pTTree_part2 + pPTree2 + proptree$rev_density - pTTree_part - pPTree - proptree$prop_density)) {
+          if (log(runif(1)) < (pTTree_part2 + pPTree_part2 + proptree$rev_density - pTTree_part - pPTree_part - proptree$prop_density)) {
 
             ctree <- ctree2
             ttree <- ttree2
   #          pTTree <- pTTree2
-            pPTree <- pPTree2
+ #           pPTree <- pPTree2
 
             prop_acc <- 1
 
@@ -287,6 +302,8 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       pTTree <- log_lik_ttree(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
                               ws.scale, dateS, dateT, delta, NA)
 
+      pPTree <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate, NA)
+
 
     }
 
@@ -300,7 +317,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
       }
 
-      pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const2, lm_rate)
+      pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const2, lm_rate, NA)
 
       if (log(runif(1)) < (pPTree2 - pPTree - lm_const2 + lm_const)) {
 
@@ -321,12 +338,35 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
       }
 
-      pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate2)
+      pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate2, NA)
 
       if (log(runif(1)) < (pPTree2 - pPTree - lm_rate2 + lm_rate)) {
 
         lm_rate <- lm_rate2
         pPTree <- pPTree2
+
+      }
+
+    }
+
+    if (updateconst & updaterate) {
+
+      step <- rnorm(1, mean = 0, sd = qcr)
+
+      lm_const2 <- lm_const + step
+      lm_rate2 <- lm_rate - step
+
+      if (lm_const2 > 0 & lm_rate2 > 0) {
+
+        pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const2, lm_rate2, NA)
+
+        if (log(runif(1)) < (pPTree2 - pPTree - lm_const2 + lm_const - lm_rate2 + lm_rate)) {
+
+          lm_const <- lm_const2
+          lm_rate <- lm_rate2
+          pPTree <- pPTree2
+
+        }
 
       }
 
