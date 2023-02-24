@@ -43,7 +43,7 @@ log_lik_ttree <- function(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws
     if (ttree[i, 2] > 0) {
 
       log_lik <- log_lik + log(pi)
-      #- log(1 - omega[tidx])
+      #log_lik <- log_lik + log(pi) - log(1 - omega[tidx])
 
       obs_time <- min(obs[which(obs[, 2] == i), 1])
 
@@ -52,7 +52,13 @@ log_lik_ttree <- function(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws
     } else {
 
       log_lik <- log_lik + log(1 - pit[tidx])
-      #- log(1 - omega[tidx])
+      #log_lik <- log_lik + log(1 - pit[tidx]) - log(1 - omega[tidx])
+
+    }
+
+    if (ttree[i, 3] == 0) {
+
+      log_lik <- log_lik - log(1 - omega[tidx])
 
     }
 
@@ -72,6 +78,7 @@ log_lik_ttree <- function(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws
         inf_host <- inc_off_idx[j]
 
         tidx2 <- 1 + floor((dateT - ttree[inf_host, 1]) / delta)
+
 
         #log_lik <- log_lik + log(1 - omega[tidx2])
 
@@ -143,13 +150,19 @@ log_likelihood_coalescence_linear <- function(infected_time, final_time,
 #' @param lm_rate Pathogen growth rate
 #'
 #' @export
-log_lik_ptree_given_ctree <- function(ctree, lm_const, lm_rate) {
+log_lik_ptree_given_ctree <- function(ctree, lm_const, lm_rate, hosts = NA) {
 
   log_lik <- 0
 
   ctree <- ctree$ctree
 
-  for (host in 1:max(ctree[, 4])) {
+  if (is.na(sum(hosts))) {
+
+    hosts <- 1:max(ctree[, 4])
+
+  }
+
+  for (host in hosts) {
 
     host_rows <- which(ctree[, 4] == host)
     host_rows <- host_rows[order(ctree[host_rows, 1], decreasing = T)]

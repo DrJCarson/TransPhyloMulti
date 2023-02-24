@@ -29,16 +29,17 @@ inferTTreeM(
   updatePi = TRUE,
   qconst = NA,
   qrate = NA,
+  qcr = NA,
   qOff.r = NA,
   qOff.p = NA,
   qPi = NA,
-  bw = 0.1,
+  bw = 0.8,
   rd = 1,
   startCTree = NA,
   updateTTree = TRUE,
   dateS = -Inf,
   dateT = Inf,
-  delta = 1/365,
+  delta = NA,
   verbose = F
 )
 }

@@ -4,7 +4,7 @@
 \alias{log_lik_ptree_given_ctree}
 \title{Likelihood evaluation for a phylogenetic tree conditional on a transmission tree}
 \usage{
-log_lik_ptree_given_ctree(ctree, lm_const, lm_rate)
+log_lik_ptree_given_ctree(ctree, lm_const, lm_rate, hosts = NA)
 }
 \arguments{
 \item{ctree}{Combined tree.}
