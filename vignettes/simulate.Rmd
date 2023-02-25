@@ -104,3 +104,10 @@ We can plot the traces of the MCMC:
 plot(res)
 ```
 
+Let's compute the matrix of who infected whom:
+
+```{r}
+res2=removeMulti(res)
+mat=computeMatWIW(res2)
+lattice::levelplot(mat,xlab='',ylab='')
+```
