@@ -36,7 +36,10 @@ removeMulti <- function(r) {
   wrl=which(remleaves)
   for (i in 1:length(res)) {
     res[[i]]$neg=res[[i]]$lm_const
-    res[[i]]$ctree$nam=res[[i]]$ctree$nam[remleaves==F]
+    nam=res[[i]]$ctree$nam[remleaves==F]
+    nam=unlist(strsplit(nam,'\\.'))
+    nam=nam[seq(1,length(nam),2)]
+    res[[i]]$ctree$nam=nam
     ctree=res[[i]]$ctree$ctree
     rem=c(remleaves,rep(F,nrow(ctree)-length(remleaves)))
     parents=rep(NA,nrow(ctree)+1)
@@ -62,6 +65,7 @@ removeMulti <- function(r) {
     ctree=ctree[!rem,]
     w=which(ctree[,2]>0);ctree[w,2]=map[ctree[w,2]]
     w=which(ctree[,3]>0);ctree[w,3]=map[ctree[w,3]]
+    ctree[,4]=TransPhylo:::.computeHost(ctree)
     res[[i]]$ctree$ctree=ctree
   }
   class(res)<-'resTransPhylo'
