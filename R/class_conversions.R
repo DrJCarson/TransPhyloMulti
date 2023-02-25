@@ -20,3 +20,50 @@ ptreeFromPhyloM <- function(tr,dateLastSample) {
   class(ptree)<-'ptreem'
   return(ptree)
 }
+
+#' Converts a resTransPhyloM into a resTransPhylo
+#' @param r object of class resTransPhyloM which is the output of inferTTreeM
+#' @return object of class resTransPhylo produced by removing non-first samples
+#' @export
+removeMulti <- function(r) {
+  res=r
+  ctree=res[[1]]$ctree$ctree
+  remleaves=F
+  for (i in 2:nrow(ctree)) {
+    if (ctree[i,2]!=0 || ctree[i,3]!=0) break
+    if (ctree[i,4]==ctree[i-1,4]) remleaves=c(remleaves,T) else remleaves=c(remleaves,F)
+  }
+  wrl=which(remleaves)
+  for (i in 1:length(res)) {
+    res[[i]]$neg=res[[i]]$lm_const
+    res[[i]]$ctree$nam=res[[i]]$ctree$nam[remleaves==F]
+    ctree=res[[i]]$ctree$ctree
+    rem=c(remleaves,rep(F,nrow(ctree)-length(remleaves)))
+    parents=rep(NA,nrow(ctree)+1)
+    parents[ctree[,2]+1]=1:nrow(ctree)
+    parents[ctree[,3]+1]=1:nrow(ctree)
+    parents=parents[-1]
+    for (j in wrl) {
+      cur=j
+      while (rem[cur]==T || ctree[cur,3]==0) {
+        rem[cur]=T
+        cur=parents[cur]
+      }
+      rem[cur]=T
+    }
+    w=which(!rem)
+    map=rep(NA,nrow(ctree))
+    map[w]=1:length(w)
+    for (j in 1:length(map)) {
+      cur=j
+      while (all(is.na(map[cur]))) {cur=ctree[cur,2:3];cur=cur[!is.na(cur)&cur>0];if (length(cur)==0) break;}
+      if (length(cur)>0) {tmp=map[cur];map[j]=tmp[!is.na(tmp)]}
+    }
+    ctree=ctree[!rem,]
+    w=which(ctree[,2]>0);ctree[w,2]=map[ctree[w,2]]
+    w=which(ctree[,3]>0);ctree[w,3]=map[ctree[w,3]]
+    res[[i]]$ctree$ctree=ctree
+  }
+  class(res)<-'resTransPhylo'
+  return(res)
+}
