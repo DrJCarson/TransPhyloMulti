@@ -111,3 +111,9 @@ res2=removeMulti(res)
 mat=computeMatWIW(res2)
 lattice::levelplot(mat,xlab='',ylab='')
 ```
+Let's compute the medoid tree:
+
+```{r}
+med=medTTreeM(res)
+plot(med)
+```
