@@ -71,3 +71,17 @@ removeMulti <- function(r) {
   class(res)<-'resTransPhylo'
   return(res)
 }
+
+#' Return the medoid from a resTransPhyloM
+#' @param record Output from inferTTreeM function
+#' @param burnin Proportion of the MCMC output to be discarded as burnin
+#' @return The medoid
+#' @export
+medTTreeM = function(record,burnin=0.5)
+{
+  res2=removeMulti(record)
+  med2=medTTree(res2,burnin)
+  i=1
+  while (nrow(res2[[i]]$ctree$ctree)!=nrow(med2$ctree) || any(res2[[i]]$ctree$ctree!=med2$ctree)) i=i+1
+  return(res[[i]]$ctree)
+}
