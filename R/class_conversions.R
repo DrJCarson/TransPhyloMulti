@@ -20,3 +20,68 @@ ptreeFromPhyloM <- function(tr,dateLastSample) {
   class(ptree)<-'ptreem'
   return(ptree)
 }
+
+#' Converts a resTransPhyloM into a resTransPhylo
+#' @param r object of class resTransPhyloM which is the output of inferTTreeM
+#' @return object of class resTransPhylo produced by removing non-first samples
+#' @export
+removeMulti <- function(r) {
+  res=r
+  ctree=res[[1]]$ctree$ctree
+  remleaves=F
+  for (i in 2:nrow(ctree)) {
+    if (ctree[i,2]!=0 || ctree[i,3]!=0) break
+    if (ctree[i,4]==ctree[i-1,4]) remleaves=c(remleaves,T) else remleaves=c(remleaves,F)
+  }
+  wrl=which(remleaves)
+  for (i in 1:length(res)) {
+    res[[i]]$neg=res[[i]]$lm_const
+    nam=res[[i]]$ctree$nam[remleaves==F]
+    nam=unlist(strsplit(nam,'\\.'))
+    nam=nam[seq(1,length(nam),2)]
+    res[[i]]$ctree$nam=nam
+    ctree=res[[i]]$ctree$ctree
+    rem=c(remleaves,rep(F,nrow(ctree)-length(remleaves)))
+    parents=rep(NA,nrow(ctree)+1)
+    parents[ctree[,2]+1]=1:nrow(ctree)
+    parents[ctree[,3]+1]=1:nrow(ctree)
+    parents=parents[-1]
+    for (j in wrl) {
+      cur=j
+      while (rem[cur]==T || ctree[cur,3]==0) {
+        rem[cur]=T
+        cur=parents[cur]
+      }
+      rem[cur]=T
+    }
+    w=which(!rem)
+    map=rep(NA,nrow(ctree))
+    map[w]=1:length(w)
+    for (j in 1:length(map)) {
+      cur=j
+      while (all(is.na(map[cur]))) {cur=ctree[cur,2:3];cur=cur[!is.na(cur)&cur>0];if (length(cur)==0) break;}
+      if (length(cur)>0) {tmp=map[cur];map[j]=tmp[!is.na(tmp)]}
+    }
+    ctree=ctree[!rem,]
+    w=which(ctree[,2]>0);ctree[w,2]=map[ctree[w,2]]
+    w=which(ctree[,3]>0);ctree[w,3]=map[ctree[w,3]]
+    ctree[,4]=TransPhylo:::.computeHost(ctree)
+    res[[i]]$ctree$ctree=ctree
+  }
+  class(res)<-'resTransPhylo'
+  return(res)
+}
+
+#' Return the medoid from a resTransPhyloM
+#' @param record Output from inferTTreeM function
+#' @param burnin Proportion of the MCMC output to be discarded as burnin
+#' @return The medoid
+#' @export
+medTTreeM = function(record,burnin=0.5)
+{
+  res2=removeMulti(record)
+  med2=medTTree(res2,burnin)
+  i=1
+  while (nrow(res2[[i]]$ctree$ctree)!=nrow(med2$ctree) || any(res2[[i]]$ctree$ctree!=med2$ctree)) i=i+1
+  return(res[[i]]$ctree)
+}
