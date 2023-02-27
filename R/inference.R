@@ -161,7 +161,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
   fn_list <- num_approx_disc(grid, delta, off.r, off.p, pi, w.shape, w.scale,
                              ws.shape, ws.scale, dateS, dateT)
 
-  pTTree <- log_lik_ttree(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale,
+  pTTree <- log_lik_ttree(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.scale,
                           ws.shape, ws.scale, dateS, dateT, delta, NA)
 
   pPTree <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate, NA)
@@ -252,10 +252,10 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
           ttree2 <- extractTTreeM(ctree2)
 
-          pTTree_part <- log_lik_ttree(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
+          pTTree_part <- log_lik_ttree(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
                                        ws.scale, dateS, dateT, delta, proptree$curr_hosts)
 
-          pTTree_part2 <- log_lik_ttree(ttree2, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
+          pTTree_part2 <- log_lik_ttree(ttree2, grid, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
                                         ws.scale, dateS, dateT, delta, proptree$prop_hosts)
 
           pPTree_part <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate, proptree$curr_hosts)
@@ -299,7 +299,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
       }
 
-      pTTree <- log_lik_ttree(ttree, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
+      pTTree <- log_lik_ttree(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
                               ws.scale, dateS, dateT, delta, NA)
 
       pPTree <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate, NA)
@@ -386,7 +386,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       fn_list2 <- num_approx_disc(grid, delta, off.r2, off.p, pi, w.shape, w.scale,
                                  ws.shape, ws.scale, dateS, dateT)
 
-      pTTree2 <- log_lik_ttree(ttree, fn_list2, off.r2, off.p, pi, w.shape, w.scale, ws.shape,
+      pTTree2 <- log_lik_ttree(ttree, grid, fn_list2, off.r2, off.p, pi, w.shape, w.scale, ws.shape,
                                ws.scale, dateS, dateT, delta, NA)
 
       if (log(runif(1)) < (pTTree2 - pTTree - off.r2 + off.r)) {
@@ -419,7 +419,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       fn_list2 <- num_approx_disc(grid, delta, off.r, off.p2, pi, w.shape, w.scale,
                                  ws.shape, ws.scale, dateS, dateT)
 
-      pTTree2 <- log_lik_ttree(ttree, fn_list2, off.r, off.p2, pi, w.shape, w.scale, ws.shape,
+      pTTree2 <- log_lik_ttree(ttree, grid, fn_list2, off.r, off.p2, pi, w.shape, w.scale, ws.shape,
                                ws.scale, dateS, dateT, delta, NA)
 
       if (log(runif(1)) < (pTTree2 - pTTree)) {
@@ -452,7 +452,7 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       fn_list2 <- num_approx_disc(grid, delta, off.r, off.p, pi2, w.shape, w.scale,
                                  ws.shape, ws.scale, dateS, dateT)
 
-      pTTree2 <- log_lik_ttree(ttree, fn_list2, off.r, off.p, pi2, w.shape, w.scale, ws.shape,
+      pTTree2 <- log_lik_ttree(ttree, grid, fn_list2, off.r, off.p, pi2, w.shape, w.scale, ws.shape,
                                ws.scale, dateS, dateT, delta, NA)
 
       if (log(runif(1)) < (pTTree2 - pTTree)) {
