@@ -6,6 +6,7 @@
 \usage{
 log_lik_ttree(
   ttree,
+  grid,
   fn_list,
   off.r,
   off.p,

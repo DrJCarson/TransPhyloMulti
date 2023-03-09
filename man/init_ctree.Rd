@@ -4,7 +4,7 @@
 \alias{init_ctree}
 \title{Create a transmission tree compatible with the provided phylogenetic tree}
 \usage{
-init_ctree(ptree)
+init_ctree(ptree, bottleneck = 1)
 }
 \arguments{
 \item{ptree}{Phylogenetic tree}
