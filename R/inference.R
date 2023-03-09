@@ -227,17 +227,17 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
         u <- runif(1)
         if (u < 1 / 3) {
 
-          proptree <- add_transmission_4(ctree = ctree, bn_weight = bw)
+          proptree <- add_transmission_6(ctree = ctree, bn_weight = bw)
           prop_type <- 1
 
         } else if (u < 2 / 3) {
 
-          proptree <- remove_transmission_4(ctree = ctree, bn_weight = bw)
+          proptree <- remove_transmission_6(ctree = ctree, bn_weight = bw)
           prop_type <- 2
 
         } else {
 
-          proptree <- remove_add_4(ctree = ctree, bn_weight = bw, delta = rd)
+          proptree <- remove_add_6(ctree = ctree, bn_weight = bw, delta = rd)
           prop_type <- 3
 
         }
