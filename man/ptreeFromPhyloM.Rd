@@ -4,12 +4,14 @@
 \alias{ptreeFromPhyloM}
 \title{Converts an ape phylo object into a phylogenetic tree with host information}
 \usage{
-ptreeFromPhyloM(tr, dateLastSample)
+ptreeFromPhyloM(tr, dateLastSample, host)
 }
 \arguments{
-\item{tr}{phylo object with labels indicating host, eg 1.1 etc}
+\item{tr}{phylo object}
 
 \item{dateLastSample}{date of the last sample}
+
+\item{host}{Optional host information, if not present the leaf names needs to contain this, eg 1.1 etc}
 }
 \value{
 phylogenetic tree
