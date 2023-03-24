@@ -1,9 +1,17 @@
 #' Converts an ape phylo object into a phylogenetic tree with host information
-#' @param tr phylo object with labels indicating host, eg 1.1 etc
+#' @param tr phylo object
 #' @param dateLastSample date of the last sample
+#' @param host Optional host information, if not present the leaf names needs to contain this, eg 1.1 etc
 #' @return phylogenetic tree
 #' @export
-ptreeFromPhyloM <- function(tr,dateLastSample) {
+ptreeFromPhyloM <- function(tr,dateLastSample,host) {
+  if (!missing(host)) {
+    r=rank(unique(host))
+    names(r)=unique(host)
+    h=r[as.character(host)]
+    names(h)=names(host)
+    tr$tip.label=sprintf('%d.%s',h[tr$tip.label],tr$tip.label)
+  }
   ptree=ptreeFromPhylo(tr,dateLastSample = dateLastSample)
   ptree$host=as.numeric(unlist(strsplit(ptree$nam,'\\.'))[seq(1,length(ptree$nam)*2,2)]) #Extract host information from leaf names
   n=length(ptree$host) # Number of leaves
