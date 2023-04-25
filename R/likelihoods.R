@@ -73,6 +73,8 @@ log_lik_ttree <- function(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.sca
 
     log_lik <- log_lik + log(alpha_sum)
 
+    log_lik <- log_lik + lfactorial(inc_off)
+
     if (inc_off > 0) {
 
       for (j in 1:inc_off) {
