@@ -646,11 +646,8 @@ sim_ongoing_n <- function(off.r = 1,
 
         h <- torem[j]
 
-<<<<<<< HEAD
-        ttree <- ttree[-h, , drop = F]
-=======
         ttree <- ttree[-h, , drop = FALSE]
->>>>>>> 391b75e058ccdc8efef781d628a747152d8c2566
+
         ttree[which(ttree[, 3] > h), 3] <- ttree[which(ttree[, 3] > h), 3] - 1
 
         obs[which(obs[, 2] > h), 2] <- obs[which(obs[, 2] > h), 2] - 1
