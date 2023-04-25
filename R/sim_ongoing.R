@@ -522,7 +522,11 @@ sim_ongoing_n <- function(off.r = 1,
 
   }
 
+  attempts <- 0
+
   repeat {
+
+    attempts <- attempts + 1
 
     t_lim1 <- Inf
     t_lim2 <- Inf
@@ -642,7 +646,8 @@ sim_ongoing_n <- function(off.r = 1,
 
         h <- torem[j]
 
-        ttree <- ttree[-h, ]
+        ttree <- ttree[-h, , drop = FALSE]
+
         ttree[which(ttree[, 3] > h), 3] <- ttree[which(ttree[, 3] > h), 3] - 1
 
         obs[which(obs[, 2] > h), 2] <- obs[which(obs[, 2] > h), 2] - 1
@@ -843,7 +848,7 @@ sim_ongoing_n <- function(off.r = 1,
   l <- list(ctree = ctree, nam = paste(nam_host, ".", nam_num, sep = ""))
   class(l) <- 'ctree'
 
-  return(list(ctree = l, dateT = 0.5 * (t_lim1 + t_lim2)))
+  return(list(ctree = l, dateT = 0.5 * (t_lim1 + t_lim2), attempts = attempts))
 
 }
 
