@@ -4,7 +4,7 @@
 \alias{remove_add_9}
 \title{Proposal to move a transmission maintaining the same host}
 \usage{
-remove_add_9(ctree, pen.prob = 0, pen.size = 1, pen.len = 1)
+remove_add_9(ctree, pen.prob = 0, pen.size = 1, pen.len = 1, epsilon = 1)
 }
 \arguments{
 \item{ctree}{Current coloured tree.}
