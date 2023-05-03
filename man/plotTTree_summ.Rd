@@ -14,8 +14,6 @@ plotTTree_summ(ttree, showLabels = T, maxTime = NA, cex = 1)
 \item{maxTime}{Maximum value of time to show on x axis}
 
 \item{cex}{Expansion factor}
-
-\item{showMissingLinks}{Option for how to show missing links: (0) as dots, (1) as several gray levels, (2) as a single gray level}
 }
 \description{
 Plot a transmission tree in an economic format

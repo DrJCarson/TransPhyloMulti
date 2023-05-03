@@ -3,6 +3,10 @@ title: "Testing TransPhyloMulti"
 author: "Xavier Didelot"
 date: '`r Sys.Date()`'
 output: pdf_document
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Testing TransPhyloMulti}
+  %\usepackage[utf8]{inputenc}
 ---
 ```{r echo=F}
 knitr::opts_chunk$set(fig.width=6, fig.height=4) 

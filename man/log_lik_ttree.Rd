@@ -43,8 +43,6 @@ log_lik_ttree(
 \item{dateT}{Stop time of outbreak sampling.}
 
 \item{delta}{Discrete time step.}
-
-\item{dateStartOutbreak}{Outbreak start date.}
 }
 \description{
 Calculate transmission tree likelihood

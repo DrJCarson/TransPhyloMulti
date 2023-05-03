@@ -64,8 +64,6 @@ sim_ongoing_n(
 \item{delta}{Discrete time step.}
 
 \item{n_lim}{Maximum number of samples.}
-
-\item{dateT}{Stop time of outbreak sampling.}
 }
 \description{
 Simulate an ongoing outbreak
