@@ -1093,7 +1093,6 @@ add_transmission_9 <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
 #' Proposal to remove a transmission
 #'
 #' @param ctree Current coloured tree.
-#' @param bn_weight Penalisation term for transmitting multiple lineages.
 #'
 #' @export
 remove_transmission_9 <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {

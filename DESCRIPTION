@@ -9,14 +9,11 @@ Authors@R:
            comment = c(ORCID = "0000-0002-7896-0971"))
 Description: Reconstruction of transmission trees using genomic data. Builds on
     TransPhylo by allowing multiple samples per host.
-License: GPL (>= 3)
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
-LinkingTo: 
-    Rcpp
-Imports: 
-    ape,
-    Rcpp,
-    TransPhylo
+RoxygenNote: 7.2.3
+Imports: stats, graphics, ape, TransPhylo
+Suggests: knitr, lattice
+VignetteBuilder: knitr

@@ -73,7 +73,8 @@ removeMulti <- function(r) {
     ctree=ctree[!rem,]
     w=which(ctree[,2]>0);ctree[w,2]=map[ctree[w,2]]
     w=which(ctree[,3]>0);ctree[w,3]=map[ctree[w,3]]
-    ctree[,4]=TransPhylo:::.computeHost(ctree)
+    .computeHost <- getFromNamespace(".computeHost", "TransPhylo")
+    ctree[,4]=.computeHost(ctree)
     res[[i]]$ctree$ctree=ctree
   }
   class(res)<-'resTransPhylo'
@@ -91,5 +92,5 @@ medTTreeM = function(record,burnin=0.5)
   med2=medTTree(res2,burnin)
   i=1
   while (nrow(res2[[i]]$ctree$ctree)!=nrow(med2$ctree) || any(res2[[i]]$ctree$ctree!=med2$ctree)) i=i+1
-  return(res[[i]]$ctree)
+  return(record[[i]]$ctree)
 }

@@ -464,7 +464,6 @@ sim_ongoing <- function(off.r = 1,
 #' @param ws.std Standard deviation of primary sampling time distribution.
 #' @param dateStartOutbreak Outbreak start date.
 #' @param dateS Start time of outbreak sampling.
-#' @param dateT Stop time of outbreak sampling.
 #' @param delta Discrete time step.
 #' @param n_lim Maximum number of samples.
 #'

@@ -10,8 +10,6 @@ plotTracesM(record, burnin = 0)
 \item{record}{Output from inferTTree function}
 
 \item{burnin}{Proportion of the MCMC output to be discarded as burnin}
-
-\item{extend}{Whether to also show traces of off.r and off.p}
 }
 \value{
 Returns invisibly the first parameter

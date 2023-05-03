@@ -1,7 +1,6 @@
 #' Plot a transmission tree in an economic format
 #' @param ttree Transmission tree
 #' @param showLabels Boolean for whether or not to show the labels
-#' @param showMissingLinks Option for how to show missing links: (0) as dots, (1) as several gray levels, (2) as a single gray level
 #' @param maxTime Maximum value of time to show on x axis
 #' @param cex Expansion factor
 #' @export
@@ -187,7 +186,6 @@ plotTTree_det = function(ttree, w.shape, w.scale, showLabels = TRUE, maxTime = N
 #' Plot MCMC traces
 #' @param record Output from inferTTree function
 #' @param burnin Proportion of the MCMC output to be discarded as burnin
-#' @param extend Whether to also show traces of off.r and off.p
 #' @return Returns invisibly the first parameter
 #' @export
 plotTracesM <- function(record, burnin = 0) {

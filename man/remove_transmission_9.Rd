@@ -8,8 +8,6 @@ remove_transmission_9(ctree, pen.prob = 0, pen.size = 1, pen.len = 1)
 }
 \arguments{
 \item{ctree}{Current coloured tree.}
-
-\item{bn_weight}{Penalisation term for transmitting multiple lineages.}
 }
 \description{
 Proposal to remove a transmission

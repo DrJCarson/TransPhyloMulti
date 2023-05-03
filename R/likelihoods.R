@@ -8,7 +8,6 @@
 #' @param w.scale Scale parameter of generation time distribution.
 #' @param ws.shape Shape parameter of primary sampling time distribution.
 #' @param ws.scale Scale parameter of primary sampling time distribution.
-#' @param dateStartOutbreak Outbreak start date.
 #' @param dateS Start time of outbreak sampling.
 #' @param dateT Stop time of outbreak sampling.
 #' @param delta Discrete time step.
