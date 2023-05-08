@@ -1127,13 +1127,13 @@ remove_transmission_9 <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1
   tr_host1 <- ctree[tr_idx, 4]
   tr_host2 <- ctree[ctree[tr_idx, 2], 4]
 
-  if (length(tr_host2) > 1) {
+  if (length(unique(tr_host2)) > 1) {
 
     sam_host2 <- sample(unique(tr_host2), size = 1)
 
   } else {
 
-    sam_host2 <- tr_host2
+    sam_host2 <- tr_host2[1]
 
   }
 
