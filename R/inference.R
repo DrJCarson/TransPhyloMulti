@@ -174,46 +174,6 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
   for (i in 1:mcmcIterations) {
 
-    if (i %% thinning == 0) {
-
-      if (verbose == F) {
-
-        utils::setTxtProgressBar(pb, i)
-
-      }
-
-      if (verbose==T) {
-
-        message(sprintf('it = %d, lm_const = %f, lm_rate = %f, off.r = %f, off.p = %f, pi = %f, Prior = %e, Likelihood = %e, nind = %d', i, lm_const, lm_rate, off.r, off.p, pi, pTTree, pPTree, nrow(ttree$ttree)))
-
-      }
-
-      record[[i / thinning]]$ctree <- ctree
-      record[[i / thinning]]$pTTree <- pTTree
-      record[[i / thinning]]$pPTree <- pPTree
-      record[[i / thinning]]$lm_const <- lm_const
-      record[[i / thinning]]$lm_rate <- lm_rate
-      record[[i / thinning]]$off.r <- off.r
-      record[[i / thinning]]$off.p <- off.p
-      record[[i / thinning]]$pi <- pi
-      record[[i / thinning]]$w.shape <- w.shape
-      record[[i / thinning]]$w.scale <- w.scale
-      record[[i / thinning]]$ws.shape <- ws.shape
-      record[[i / thinning]]$ws.scale <- ws.scale
-
-      record[[i / thinning]]$source <- ctree$ctree[ctree$ctree[which(ctree$ctree[, 4] == 0), 2], 4]
-      if (record[[i / thinning]]$source <= length(ctree$nam)) {
-
-        record[[i / thinning]]$source <- ctree$nam[record[[i / thinning]]$source]
-
-      } else {
-
-        record[[i / thinning]]$source <- 'Unsampled'
-
-      }
-
-    }
-
     if (updateTTree) {
 
       if (verbose) {
@@ -461,6 +421,46 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
         pTTree <- pTTree2
 
         fn_list <- fn_list2
+
+      }
+
+    }
+
+    if (i %% thinning == 0) {
+
+      if (verbose == F) {
+
+        utils::setTxtProgressBar(pb, i)
+
+      }
+
+      if (verbose==T) {
+
+        message(sprintf('it = %d, lm_const = %f, lm_rate = %f, off.r = %f, off.p = %f, pi = %f, Prior = %e, Likelihood = %e, nind = %d', i, lm_const, lm_rate, off.r, off.p, pi, pTTree, pPTree, nrow(ttree$ttree)))
+
+      }
+
+      record[[i / thinning]]$ctree <- ctree
+      record[[i / thinning]]$pTTree <- pTTree
+      record[[i / thinning]]$pPTree <- pPTree
+      record[[i / thinning]]$lm_const <- lm_const
+      record[[i / thinning]]$lm_rate <- lm_rate
+      record[[i / thinning]]$off.r <- off.r
+      record[[i / thinning]]$off.p <- off.p
+      record[[i / thinning]]$pi <- pi
+      record[[i / thinning]]$w.shape <- w.shape
+      record[[i / thinning]]$w.scale <- w.scale
+      record[[i / thinning]]$ws.shape <- ws.shape
+      record[[i / thinning]]$ws.scale <- ws.scale
+
+      record[[i / thinning]]$source <- ctree$ctree[ctree$ctree[which(ctree$ctree[, 4] == 0), 2], 4]
+      if (record[[i / thinning]]$source <= length(ctree$nam)) {
+
+        record[[i / thinning]]$source <- ctree$nam[record[[i / thinning]]$source]
+
+      } else {
+
+        record[[i / thinning]]$source <- 'Unsampled'
 
       }
 
