@@ -440,6 +440,8 @@ sim_ongoing <- function(off.r = 1,
   out <- list(ctree = ctree, nam = paste(nam_host, ".", nam_num, sep = ""))
   class(out) <- 'ctree'
 
+  out <- trim_root(out)
+
   return(out)
 
 }
@@ -846,6 +848,8 @@ sim_ongoing_n <- function(off.r = 1,
 
   l <- list(ctree = ctree, nam = paste(nam_host, ".", nam_num, sep = ""))
   class(l) <- 'ctree'
+
+  l <- trim_root(l)
 
   return(list(ctree = l, dateT = 0.5 * (t_lim1 + t_lim2), attempts = attempts))
 

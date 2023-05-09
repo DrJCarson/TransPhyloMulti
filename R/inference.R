@@ -440,9 +440,17 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
       }
 
-      record[[i / thinning]]$ctree <- ctree
-      record[[i / thinning]]$pTTree <- pTTree
-      record[[i / thinning]]$pPTree <- pPTree
+      rec_ctree <- trim_root(ctree)
+      rec_ttree <- extractTTreeM(rec_ctree)
+
+      rec_pTTree <- log_lik_ttree(rec_ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
+                                  ws.scale, dateS, dateT, delta, NA)
+      rec_pPTree <- log_lik_ptree_given_ctree(rec_ctree, lm_const, lm_rate, NA)
+
+
+      record[[i / thinning]]$ctree <- rec_ctree
+      record[[i / thinning]]$pTTree <- rec_pTTree
+      record[[i / thinning]]$pPTree <- rec_pPTree
       record[[i / thinning]]$lm_const <- lm_const
       record[[i / thinning]]$lm_rate <- lm_rate
       record[[i / thinning]]$off.r <- off.r
@@ -453,10 +461,10 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
       record[[i / thinning]]$ws.shape <- ws.shape
       record[[i / thinning]]$ws.scale <- ws.scale
 
-      record[[i / thinning]]$source <- ctree$ctree[ctree$ctree[which(ctree$ctree[, 4] == 0), 2], 4]
-      if (record[[i / thinning]]$source <= length(ctree$nam)) {
+      record[[i / thinning]]$source <- rec_ctree$ctree[rec_ctree$ctree[which(rec_ctree$ctree[, 4] == 0), 2], 4]
+      if (record[[i / thinning]]$source <= length(rec_ctree$nam)) {
 
-        record[[i / thinning]]$source <- ctree$nam[record[[i / thinning]]$source]
+        record[[i / thinning]]$source <- rec_ctree$nam[record[[i / thinning]]$source]
 
       } else {
 
