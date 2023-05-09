@@ -18,6 +18,54 @@ order_hosts <- function(ctree) {
 }
 
 
+#' Remove extra root hosts from a coloured tree
+#'
+#' @param ctree Coloured tree
+#'
+#' @export
+trim_root <- function(ctree) {
+
+  nam <- ctree$nam
+  ctree <- ctree$ctree
+
+  repeat {
+
+    root_row <- which(ctree[, 4] == 0)
+
+    child_row <- ctree[root_row, 2]
+
+    if (ctree[child_row, 2] > 0 & ctree[child_row, 3] == 0) {
+
+      rem_host <- ctree[child_row, 4]
+
+      ctree <- ctree[-root_row, ]
+
+      ctree[child_row, 4] <- 0
+
+      if (rem_host < max(ctree[, 4])) {
+
+        ctree[which(ctree[, 4] > rem_host), 4] <- ctree[which(ctree[, 4] > rem_host), 4] - 1
+
+      }
+
+    } else {
+
+      break
+
+    }
+
+  }
+
+  ctree <- order_hosts(ctree)
+
+  new_ctree <- list(ctree = ctree, nam = nam)
+  class(new_ctree) <- 'ctree'
+
+  return(new_ctree)
+
+}
+
+
 
 #' Truncate a combined tree
 #'
