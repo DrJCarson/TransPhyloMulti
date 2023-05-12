@@ -222,3 +222,24 @@ trunc_ctree <- function(ctree, trunc_time = NA, n_obs = NA) {
   return(list(ctree = new_ctree, dateT = dateT))
 
 }
+
+
+#' Calculate primary observation times
+#'
+#' @export
+calc_prim_obs <- function(ptree) {
+
+  host <- ptree$host
+  ptree <- ptree$ptree
+
+  prim_times <- numeric(max(host))
+
+  for (i in 1:max(host)) {
+
+    prim_times[i] <- min(ptree[which(host == i), 1])
+
+  }
+
+  return(prim_times)
+
+}
