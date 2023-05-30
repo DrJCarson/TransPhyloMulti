@@ -42,11 +42,21 @@ inferTTreeM <- function(ptree, w.shape = 2, w.scale = 1, ws.shape = NA, ws.scale
 
   ptree$ptree[, 1] <- ptree$ptree[, 1] + runif(nrow(ptree$ptree)) * 1e-10 #Ensure that all leaves have unique times
 
-  if (dateT < max(ptree$ptree[, 1])) {
 
-    stop('The parameter dateT cannot be smaller than the date of the last sample')
+  prim_obs_times <- calc_prim_obs(ptree)
+
+  if (dateT < max(prim_obs_times)) {
+
+    stop('The parameter dateT cannot be earlier than the latest primary observation date')
 
   }
+
+
+  #else if (dateT < max(ptree$ptree[, 1])) {
+
+  #  warning('The parameter dateT is earlier than some secondary observation dates')
+
+  #}
 
   if (dateS > min(ptree$ptree[which(ptree$ptree[, 2] == 0), 1])) {
 
