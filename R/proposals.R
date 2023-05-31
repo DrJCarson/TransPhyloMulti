@@ -4,7 +4,7 @@
 #' @param ctree Current coloured tree.
 #'
 #' @export
-remove_add_9 <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1, epsilon = 1) {
+remove_add <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1, epsilon = 1) {
 
   # Extract ctree
   nam <- ctree$nam
@@ -588,7 +588,7 @@ remove_add_9 <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1, epsilon
 
 ##############################################################################################
 
-add_transmission_9 <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
+add_transmission <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
 
   # Extract ctree
   nam <- ctree$nam
@@ -1095,7 +1095,7 @@ add_transmission_9 <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
 #' @param ctree Current coloured tree.
 #'
 #' @export
-remove_transmission_9 <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
+remove_transmission <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
 
   # Extract ctree
   nam <- ctree$nam
