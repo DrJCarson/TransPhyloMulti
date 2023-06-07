@@ -588,6 +588,7 @@ remove_add <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1, epsilon =
 
 ##############################################################################################
 
+#' @export
 add_transmission <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
 
   # Extract ctree

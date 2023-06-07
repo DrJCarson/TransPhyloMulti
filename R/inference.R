@@ -163,7 +163,7 @@ inferTTreeM <- function(ptree,
 
   }
 
-  if (is.na(init.ctree)) {
+  if (sum(is.na(init.ctree))) {
 
     ctree <- init_ctree(ptree)
 
@@ -179,27 +179,49 @@ inferTTreeM <- function(ptree,
 
   }
 
-  off.r <- init.r
-  off.p <- init.p
-  pi <- init.pi
-  kappa <- init.kappa
-  lambda <- init.lambda
+  const.pi <- 3.14159265359
 
-  parms <- c(off.r, off.p, pi, kappa, lambda)
+  parms.init <- c(r = init.r,
+                  p = init.p,
+                  pi = init.pi,
+                  kappa = init.kappa,
+                  lambda = init.lambda)
+
+  parms.curr <- parms.init
+
+  ss.a <- 0.234
+  update.ind <- c(update.r, update.p, update.pi, update.kappa, update.lambda)
+  ss.d <- sum(as.numeric(update.ind))
+  ss.v0 <- ss.d
+  ss.f <- floor(0.5 * sqrt(2 * (1:mcmc.length)))
+  ss.min <- 0.1
+
+  ss.c <- 2.38 ^ 2 / ss.d
+  ss.lamstart <- 1
+  ss.lam <- ss.lamstart
+  ss.nstart <- 5 / (ss.a * (1 - ss.a))
+  ss.A <- -qnorm(ss.a / 2)
+  ss.del <- (1 - (1 / ss.d)) * ((sqrt(2 * const.pi) * exp(ss.A ^ 2 / 2)) / (2 * ss.A)) + (1 / (ss.d * ss.a * (1 - ss.a)))
 
   ttree <- extractTTreeM(ctree)
 
   record <- vector('list', mcmc.length / mcmc.thinning)
 
+  trace.r <- numeric(mcmc.length)
+  trace.p <- numeric(mcmc.length)
+  trace.pi <- numeric(mcmc.length)
+  trace.kappa <- numeric(mcmc.length)
+  trace.lambda <- numeric(mcmc.length)
+
   grid <- seq(obs.end, min(ttree$ttree[, 1]) - 0.5 * 1 - grid.delta, by = - grid.delta)
 
-  fn_list <- num_approx_disc(grid, grid.delta, off.r, off.p, pi, w.shape, w.scale,
+  fn_list <- num_approx_disc(grid, grid.delta, init.r, init.p, init.pi, w.shape, w.scale,
                              ws.shape, ws.scale, obs.start, obs.end)
 
-  pTTree <- log_lik_ttree(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.scale,
+  pTTree <- log_lik_ttree(ttree, grid, fn_list, init.r, init.p, init.pi, w.shape, w.scale,
                           ws.shape, ws.scale, obs.start, obs.end, grid.delta, NA)
 
-  pPTree <- log_lik_ptree_given_ctree(ctree, kappa, lambda, NA)
+  pPTree <- log_lik_ptree_given_ctree(ctree, init.kappa, init.lambda, NA)
 
   if (verbose == F) {
 
@@ -236,19 +258,19 @@ inferTTreeM <- function(ptree,
 
           proptree <- add_transmission(ctree = ctree)
           prop_type <- 1
-          tree_prop_count$add <- tree_prop_count$add + 1
+          tree_prop_count["add"] <- tree_prop_count["add"] + 1
 
         } else if (u < 2 / 3) {
 
           proptree <- remove_transmission(ctree = ctree)
           prop_type <- 2
-          tree_prop_count$remove <- tree_prop_count$remove + 1
+          tree_prop_count["remove"] <- tree_prop_count["remove"] + 1
 
         } else {
 
           proptree <- remove_add(ctree = ctree)
           prop_type <- 3
-          tree_prop_count$move <- tree_prop_count$move + 1
+          tree_prop_count["move"] <- tree_prop_count["move"] + 1
 
         }
 
@@ -258,15 +280,15 @@ inferTTreeM <- function(ptree,
 
           ttree2 <- extractTTreeM(ctree2)
 
-          pTTree_part <- log_lik_ttree(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
+          pTTree_part <- log_lik_ttree(ttree, grid, fn_list, parms.curr["r"], parms.curr["p"], parms.curr["pi"], w.shape, w.scale, ws.shape,
                                        ws.scale, obs.start, obs.end, grid.delta, proptree$curr_hosts)
 
-          pTTree_part2 <- log_lik_ttree(ttree2, grid, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
+          pTTree_part2 <- log_lik_ttree(ttree2, grid, fn_list, parms.curr["r"], parms.curr["p"], parms.curr["pi"], w.shape, w.scale, ws.shape,
                                         ws.scale, obs.start, obs.end, grid.delta, proptree$prop_hosts)
 
-          pPTree_part <- log_lik_ptree_given_ctree(ctree, kappa, lambda, proptree$curr_hosts)
+          pPTree_part <- log_lik_ptree_given_ctree(ctree, parms.curr["kappa"], parms.curr["lambda"], proptree$curr_hosts)
 
-          pPTree_part2 <- log_lik_ptree_given_ctree(ctree2, kappa, lambda, proptree$prop_hosts)
+          pPTree_part2 <- log_lik_ptree_given_ctree(ctree2, parms.curr["kappa"], parms.curr["lambda"], proptree$prop_hosts)
 
           if (log(runif(1)) < (pTTree_part2 + pPTree_part2 + proptree$rev_density -
                                pTTree_part - pPTree_part - proptree$prop_density)) {
@@ -279,15 +301,15 @@ inferTTreeM <- function(ptree,
 
             if (prop_type == 1) {
 
-              tree_acc_count$add <- tree_acc_count$add + 1
+              tree_acc_count["add"] <- tree_acc_count["add"] + 1
 
             } else if (prop_type == 2) {
 
-              tree_acc_count$remove <- tree_acc_count$remove + 1
+              tree_acc_count["remove"] <- tree_acc_count["remove"] + 1
 
             } else {
 
-              tree_acc_count$move <- tree_acc_count$move + 1
+              tree_acc_count["move"] <- tree_acc_count["move"] + 1
 
             }
 
@@ -295,7 +317,7 @@ inferTTreeM <- function(ptree,
 
               grid <- seq(obs.end, min(ttree$ttree[, 1]) - 0.5 * 1 - grid.delta, by = - grid.delta)
 
-              fn_list <- num_approx_disc(grid, grid.delta, off.r, off.p, pi, w.shape, w.scale,
+              fn_list <- num_approx_disc(grid, grid.delta, parms.curr["r"], parms.curr["p"], parms.curr["pi"], w.shape, w.scale,
                                          ws.shape, ws.scale, obs.start, obs.end)
 
             }
@@ -306,184 +328,135 @@ inferTTreeM <- function(ptree,
 
       }
 
-      if (i %% thinning == 0) {
+      if (i %% mcmc.thinning == 0) {
 
-        tree_acc_rate$add <- tree_add_count$add / tree_prop_count$add
-        tree_acc_rate$remove <- tree_add_count$remove / tree_prop_count$remove
-        tree_acc_rate$move <- tree_add_count$move / tree_prop_count$move
+        tree_acc_rates["add"] <- tree_acc_count["add"] / tree_prop_count["add"]
+        tree_acc_rates["remove"] <- tree_acc_count["remove"] / tree_prop_count["remove"]
+        tree_acc_rates["move"] <- tree_acc_count["move"] / tree_prop_count["move"]
 
-        record[[i / thinning]]$tree.prop.counts <- tree_prop_count
-        record[[i / thinning]]$tree.acc.rates <- tree_acc_rates
+        record[[i / mcmc.thinning]]$tree.prop.counts <- tree_prop_count
+        record[[i / mcmc.thinning]]$tree.acc.rates <- tree_acc_rates
 
       }
-
-#      pTTree <- log_lik_ttree(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape, ws.scale, obs.start, obs.end, grid.delta, NA)
-
-#      pPTree <- log_lik_ptree_given_ctree(ctree, kappa, lambda, NA)
-
 
     }
 
-    if (updateconst) {
+    if (ss.d > 0) {
 
-      lm_const2 <- abs(lm_const + rnorm(1, mean = 0, sd = qconst))
+      parms.prop <- MASS::mvrnorm(1, mu = parms.curr, Sigma = ss.lam * ss.c * mcmc.cov)
 
-      if (verbose) {
+      ss.u <- log(runif(1))
 
-        message(sprintf("Proposing lm_const update %f->%f", lm_const , lm_const2))
+      if (parms.prop["r"] > 0 & parms.prop["p"] > 0 & parms.prop["p"] <= 1 &
+          parms.prop["pi"] > 0 & parms.prop["pi"] <= 1 & parms.prop["kappa"] > 0 &
+          parms.prop["lambda"] > 0) {
+
+        fn_list2 <- num_approx_disc(grid, grid.delta, parms.prop["r"], parms.prop["p"], parms.prop["pi"], w.shape, w.scale,
+                                   ws.shape, ws.scale, obs.start, obs.end)
+
+        pTTree2 <- log_lik_ttree(ttree, grid, fn_list2, parms.prop["r"], parms.prop["p"],
+                                 parms.prop["pi"], w.shape, w.scale, ws.shape,
+                                 ws.scale, obs.start, obs.end, grid.delta, NA)
+
+        pPTree2 <- log_lik_ptree_given_ctree(ctree, parms.prop["kappa"],
+                                             parms.prop["lambda"], NA)
+
+        ss.alpha <- (pTTree2 - pTTree) + (pPTree2 - pPTree) +
+          (dgamma(parms.prop["r"], shape = r.shape, scale = r.scale, log = T) -
+             dgamma(parms.curr["r"], shape = r.shape, scale = r.scale, log = T)) +
+          (dbeta(parms.prop["p"], shape1 = p.shape1, shape2 = p.shape2, log = T) -
+             dbeta(parms.curr["p"], shape1 = p.shape1, shape2 = p.shape2, log = T)) +
+          (dbeta(parms.prop["pi"], shape1 = pi.shape1, shape2 = pi.shape2, log = T) -
+             dbeta(parms.curr["pi"], shape1 = pi.shape1, shape2 = pi.shape2, log = T)) +
+          (dgamma(parms.prop["kappa"], shape = kappa.shape, scale = kappa.scale, log = T) -
+             dgamma(parms.curr["kappa"], shape = kappa.shape, scale = kappa.scale, log = T)) +
+          (dgamma(parms.prop["lambda"], shape = lambda.shape, scale = lambda.scale, log = T) -
+             dgamma(parms.curr["lambda"], shape = lambda.shape, scale = lambda.scale, log = T))
+
+      } else {
+
+        ss.alpha <- -Inf
 
       }
 
-      pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const2, lm_rate, NA)
+      if (ss.u < ss.alpha) {
 
-      if (log(runif(1)) < (pPTree2 - pPTree - lm_const2 + lm_const)) {
+        parms.curr[which(update.ind)] <- parms.prop[which(update.ind)]
 
-        lm_const <- lm_const2
+        fn_list <- fn_list2
+        pTTree <- pTTree2
         pPTree <- pPTree2
 
       }
 
-    }
+      trace.r[i] <- parms.curr["r"]
+      trace.p[i] <- parms.curr["p"]
+      trace.pi[i] <- parms.curr["pi"]
+      trace.kappa[i] <- parms.curr["kappa"]
+      trace.lambda[i] <- parms.curr["lambda"]
 
-    if (updaterate) {
+      if (i == 1) {
 
-      lm_rate2 <- abs(lm_rate + rnorm(1, mean = 0, sd = qrate))
+        mcmc.mu <- 0.5 * (parms.init + parms.curr)
 
-      if (verbose) {
+        mcmc.cov <- (1 / (ss.v0 + ss.d + 3)) * (parms.init %*% t(parms.init) +
+                                                  parms.curr %*% t(parms.curr) +
+                                                  (ss.v0 + ss.d + 1) * mcmc.cov -
+                                                  2 * mcmc.mu %*% t(mcmc.mu))
 
-        message(sprintf("Proposing lm_rate update %f->%f", lm_rate , lm_rate2))
+      } else if (ss.f[i] == ss.f[i - 1]) {
 
-      }
+        mcmc.mu.new <- ((i - ss.f[i]) / (i - ss.f[i] + 1)) * mcmc.mu +
+          (1 / (i - ss.f[i] + 1)) * parms.curr
 
-      pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const, lm_rate2, NA)
+        mcmc.cov <- (1 / (i - ss.f[i] + ss.v0 + ss.d + 2)) *
+          ((i - ss.f[i] + ss.v0 + ss.d + 1) * mcmc.cov +
+             parms.curr %*% t(parms.curr) +
+             (i - ss.f[i]) * mcmc.mu %*% t(mcmc.mu) -
+             (i - ss.f[i] + 1) * mcmc.mu.new %*% t(mcmc.mu.new))
 
-      if (log(runif(1)) < (pPTree2 - pPTree - lm_rate2 + lm_rate)) {
+        mcmc.mu <- mcmc.mu.new
 
-        lm_rate <- lm_rate2
-        pPTree <- pPTree2
+      } else {
 
-      }
+        rem.el <- ss.f[i] - 1
 
-    }
+        if (rem.el == 0) {
 
-    if (updateconst & updaterate) {
+          parms.rem <- parms.init
 
-      step <- rnorm(1, mean = 0, sd = qcr)
+        } else {
 
-      lm_const2 <- lm_const + step
-      lm_rate2 <- lm_rate - step
-
-      if (lm_const2 > 0 & lm_rate2 > 0) {
-
-        pPTree2 <- log_lik_ptree_given_ctree(ctree, lm_const2, lm_rate2, NA)
-
-        if (log(runif(1)) < (pPTree2 - pPTree - lm_const2 + lm_const - lm_rate2 + lm_rate)) {
-
-          lm_const <- lm_const2
-          lm_rate <- lm_rate2
-          pPTree <- pPTree2
+          parms.rem <- c(r = trace.r[rem.el],
+                         p = trace.p[rem.el],
+                         pi = trace.pi[rem.el],
+                         kappa = trace.kappa[rem.el],
+                         lambda = trace.lambda[rem.el])
 
         }
 
+        mcmc.mu.new <- mcmc.mu + (1 / (i - ss.f[i] + 1)) * (parms.curr - parms.rem)
+
+        mcmc.cov <- mcmc.cov + (1 / (i - ss.f[i] + ss.v0 + ss.d + 2)) *
+          (parms.curr %*% t(parms.curr) - parms.rem %*% t(parms.rem) +
+             (i - ss.f[i] + 1) * (mcmc.mu %*% t(mcmc.mu) - mcmc.mu.new %*% t(mcmc.mu.new)))
+
+        mcmc.mu <- mcmc.mu.new
+
       }
+
+      ss.lam <- max(c(ss.min, ss.lam * exp((ss.del / (ss.nstart + i)) * (min(c(1, exp(ss.alpha))) - ss.a))))
+
+#      if (abs(log(ss.lam) - log(ss.lamstart)) > log(3)) {
+
+#        ss.lam <- ss.lamstart
+#        ss.nstart <- (5 / (ss.a * (1 - ss.a))) - i
+
+#      }
 
     }
 
-    if (updateOff.r) {
-
-      #Metropolis update for off.r, assuming Exp(1) prior
-      off.r2 <- abs(off.r + rnorm(1, mean = 0, sd = qOff.r))
-
-      if (verbose) {
-
-        message(sprintf("Proposing off.r update %f->%f", off.r, off.r2))
-
-      }
-
-      fn_list2 <- num_approx_disc(grid, delta, off.r2, off.p, pi, w.shape, w.scale,
-                                 ws.shape, ws.scale, dateS, dateT)
-
-      pTTree2 <- log_lik_ttree(ttree, grid, fn_list2, off.r2, off.p, pi, w.shape, w.scale, ws.shape,
-                               ws.scale, dateS, dateT, delta, NA)
-
-      if (log(runif(1)) < (pTTree2 - pTTree - off.r2 + off.r)) {
-
-        off.r <- off.r2
-        pTTree <- pTTree2
-        fn_list <- fn_list2
-
-      }
-
-    }
-
-    if (updateOff.p) {
-
-      #Metropolis update for off.p, assuming Unif(0,1) prior
-      off.p2 <- abs(off.p + (runif(1) - 0.5) * qOff.p)
-
-      if (off.p2 > 1) {
-
-        off.p2 <- 2 - off.p2
-
-      }
-
-      if (verbose) {
-
-        message(sprintf("Proposing off.p update %f->%f", off.p, off.p2))
-
-      }
-
-      fn_list2 <- num_approx_disc(grid, delta, off.r, off.p2, pi, w.shape, w.scale,
-                                 ws.shape, ws.scale, dateS, dateT)
-
-      pTTree2 <- log_lik_ttree(ttree, grid, fn_list2, off.r, off.p2, pi, w.shape, w.scale, ws.shape,
-                               ws.scale, dateS, dateT, delta, NA)
-
-      if (log(runif(1)) < (pTTree2 - pTTree)) {
-
-        off.p <- off.p2
-        pTTree <- pTTree2
-        fn_list <- fn_list2
-
-      }
-
-    }
-
-    if (updatePi) {
-
-      #Metropolis update for pi, assuming Unif(0,1) prior
-      pi2 <- abs(pi + (runif(1) - 0.5) * qPi)
-
-      if (pi2 > 1) {
-
-        pi2 <- 2 - pi2
-
-      }
-
-      if (verbose) {
-
-        message(sprintf("Proposing pi update %f->%f", pi, pi2))
-
-      }
-
-      fn_list2 <- num_approx_disc(grid, delta, off.r, off.p, pi2, w.shape, w.scale,
-                                 ws.shape, ws.scale, dateS, dateT)
-
-      pTTree2 <- log_lik_ttree(ttree, grid, fn_list2, off.r, off.p, pi2, w.shape, w.scale, ws.shape,
-                               ws.scale, dateS, dateT, delta, NA)
-
-      if (log(runif(1)) < (pTTree2 - pTTree)) {
-
-        pi <- pi2
-        pTTree <- pTTree2
-
-        fn_list <- fn_list2
-
-      }
-
-    }
-
-    if (i %% thinning == 0) {
+    if (i %% mcmc.thinning == 0) {
 
       if (verbose == F) {
 
@@ -493,39 +466,35 @@ inferTTreeM <- function(ptree,
 
       if (verbose==T) {
 
-        message(sprintf('it = %d, lm_const = %f, lm_rate = %f, off.r = %f, off.p = %f, pi = %f, Prior = %e, Likelihood = %e, nind = %d', i, lm_const, lm_rate, off.r, off.p, pi, pTTree, pPTree, nrow(ttree$ttree)))
+        message(sprintf('it = %d, r = %f, off.p = %f, pi = %f, kappa = %f, lambda = %f, prior = %e, likelihood = %e, nind = %d', i, parms.curr["r"], parms.curr["p"], parms.curr["pi"], parms.curr["kappa"], parms.curr["lambda"], pTTree, pPTree, nrow(ttree$ttree)))
 
       }
 
       rec_ctree <- trim_root(ctree)
-      rec_ttree <- extractTTreeM(rec_ctree)
 
-      rec_pTTree <- log_lik_ttree(rec_ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
-                                  ws.scale, dateS, dateT, delta, NA)
-      rec_pPTree <- log_lik_ptree_given_ctree(rec_ctree, lm_const, lm_rate, NA)
+      record[[i / mcmc.thinning]]$ctree <- rec_ctree
+      record[[i / mcmc.thinning]]$pTTree <- pTTree
+      record[[i / mcmc.thinning]]$pPTree <- pPTree
+      record[[i / mcmc.thinning]]$lm_const <- parms.curr["kappa"]
+      record[[i / mcmc.thinning]]$lm_rate <- parms.curr["lambda"]
+      record[[i / mcmc.thinning]]$off.r <- parms.curr["r"]
+      record[[i / mcmc.thinning]]$off.p <- parms.curr["p"]
+      record[[i / mcmc.thinning]]$pi <- parms.curr["pi"]
+      record[[i / mcmc.thinning]]$w.shape <- w.shape
+      record[[i / mcmc.thinning]]$w.scale <- w.scale
+      record[[i / mcmc.thinning]]$ws.shape <- ws.shape
+      record[[i / mcmc.thinning]]$ws.scale <- ws.scale
+      record[[i / mcmc.thinning]]$mcmc.cov <- mcmc.cov
+      record[[i / mcmc.thinning]]$ss.lam <- ss.lam
 
+      record[[i / mcmc.thinning]]$source <- rec_ctree$ctree[rec_ctree$ctree[which(rec_ctree$ctree[, 4] == 0), 2], 4]
+      if (record[[i / mcmc.thinning]]$source <= length(rec_ctree$nam)) {
 
-      record[[i / thinning]]$ctree <- rec_ctree
-      record[[i / thinning]]$pTTree <- rec_pTTree
-      record[[i / thinning]]$pPTree <- rec_pPTree
-      record[[i / thinning]]$lm_const <- lm_const
-      record[[i / thinning]]$lm_rate <- lm_rate
-      record[[i / thinning]]$off.r <- off.r
-      record[[i / thinning]]$off.p <- off.p
-      record[[i / thinning]]$pi <- pi
-      record[[i / thinning]]$w.shape <- w.shape
-      record[[i / thinning]]$w.scale <- w.scale
-      record[[i / thinning]]$ws.shape <- ws.shape
-      record[[i / thinning]]$ws.scale <- ws.scale
-
-      record[[i / thinning]]$source <- rec_ctree$ctree[rec_ctree$ctree[which(rec_ctree$ctree[, 4] == 0), 2], 4]
-      if (record[[i / thinning]]$source <= length(rec_ctree$nam)) {
-
-        record[[i / thinning]]$source <- rec_ctree$nam[record[[i / thinning]]$source]
+        record[[i / mcmc.thinning]]$source <- rec_ctree$nam[record[[i / mcmc.thinning]]$source]
 
       } else {
 
-        record[[i / thinning]]$source <- 'Unsampled'
+        record[[i / mcmc.thinning]]$source <- 'Unsampled'
 
       }
 

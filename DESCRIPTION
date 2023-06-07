@@ -14,6 +14,6 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Imports: stats, graphics, ape, TransPhylo
+Imports: stats, graphics, ape, TransPhylo, MASS
 Suggests: knitr, lattice
 VignetteBuilder: knitr

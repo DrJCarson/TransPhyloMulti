@@ -11,6 +11,7 @@
 #' @param ws.scale Scale parameter of primary sampling time distribution.
 #' @param dateS Start time of outbreak sampling.
 #' @param dateT Stop time of outbreak sampling.
+#' @export
 num_approx_disc <- function(grid,
                             delta,
                             off.r,
@@ -1036,6 +1037,12 @@ sim_ongoing_h <- function(off.r = 1,
         t_inf <- ttree[i, 1]
 
       }
+
+    }
+
+    if (length(prim_obs) < n_hosts) {
+
+      next
 
     }
 
