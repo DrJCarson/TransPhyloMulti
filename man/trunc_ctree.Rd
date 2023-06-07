@@ -6,6 +6,13 @@
 \usage{
 trunc_ctree(ctree, trunc_time = NA, n_obs = NA)
 }
+\arguments{
+\item{ctree}{Coloured tree}
+
+\item{trunc_time}{Time to truncate tree}
+
+\item{n_obs}{Number of observations in final tree}
+}
 \description{
 Truncate a combined tree
 }

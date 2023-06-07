@@ -1,9 +1,8 @@
 
-#' Proposal to move a transmission maintaining the same host
+#' Proposal to move a transmission whilst maintaining the same host
 #'
-#' @param ctree Current coloured tree.
-#'
-#' @export
+#' @param ctree Current coloured tree
+#' @param epsilon Scale for root time update proposals
 remove_add <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1, epsilon = 1) {
 
   # Extract ctree
@@ -588,7 +587,9 @@ remove_add <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1, epsilon =
 
 ##############################################################################################
 
-#' @export
+#' Proposal to add a transmission
+#'
+#' @param ctree Current coloured tree
 add_transmission <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
 
   # Extract ctree
@@ -1094,8 +1095,6 @@ add_transmission <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
 #' Proposal to remove a transmission
 #'
 #' @param ctree Current coloured tree.
-#'
-#' @export
 remove_transmission <- function(ctree, pen.prob = 0, pen.size = 1, pen.len = 1) {
 
   # Extract ctree

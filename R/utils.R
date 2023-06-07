@@ -1,8 +1,68 @@
+#' Numeric approximations (discretised) of branching process
+#'
+#' @param grid Discrete grid over which to evaluate functions
+#' @param off.r Shape parameter for the number of offspring
+#' @param off.p Probability parameter for the number of offspring
+#' @param pi Probability of host being observed
+#' @param w.shape Shape parameter of generation time distribution
+#' @param w.scale Scale parameter of generation time distribution
+#' @param ws.shape Shape parameter of primary sampling time distribution
+#' @param ws.scale Scale parameter of primary sampling time distribution
+#' @param obs.start Start date for observations
+#' @param obs.end End date for observations
+num_approx_disc <- function(grid,
+                            off.r,
+                            off.p,
+                            pi,
+                            w.shape,
+                            w.scale,
+                            ws.shape,
+                            ws.scale,
+                            obs.start,
+                            obs.end) {
+
+  grid.size <- length(grid)
+
+  omega <- numeric(grid.size)
+  omega_bar <- numeric(grid.size)
+  phi <- numeric(grid.size)
+  pit <- numeric(grid.size)
+
+  omega[1] <- 1
+  omega_bar[1] <- 1
+  phi[1] <- 1
+
+  pit <- pi * (pgamma(obs.end - grid, shape = ws.shape, scale = ws.scale) -
+                 pgamma(obs.start - grid, shape = ws.shape, scale = ws.scale))
+
+  gamma_prob <- pgamma(grid[1] - grid,  shape = w.shape, scale = w.scale) -
+    pgamma(grid[2] - grid,  shape = w.shape, scale = w.scale)
+
+  ft <- 1 - cumsum(gamma_prob)
+
+  for (g in 2:grid.size) {
+
+    omega_bar[g] <- ft[g] + sum(gamma_prob[g:2] * omega[1:(g - 1)])
+
+    phi[g] <- (off.p / (1 - (1 - off.p) * omega_bar[g])) ^ off.r
+
+    omega[g] <- (1 - pit[g]) * phi[g]
+
+  }
+
+  return(list(omega = omega,
+              omega_bar = omega_bar,
+              phi = phi,
+              pit = pit,
+              gamma_prob = gamma_prob))
+
+}
+
+
+
 #' Order hosts in a coloured tree
 #'
-#' @param ctree Current coloured tree.
-#'
-#' @export
+#' @param ctree Current coloured tree
 order_hosts <- function(ctree) {
 
   unique_hosts <- unique(ctree[, 4])
@@ -21,8 +81,6 @@ order_hosts <- function(ctree) {
 #' Remove extra root hosts from a coloured tree
 #'
 #' @param ctree Coloured tree
-#'
-#' @export
 trim_root <- function(ctree) {
 
   nam <- ctree$nam
@@ -69,8 +127,9 @@ trim_root <- function(ctree) {
 
 #' Truncate a combined tree
 #'
-#'
-#' @export
+#' @param ctree Coloured tree
+#' @param trunc_time Time to truncate tree
+#' @param n_obs Number of observations in final tree
 trunc_ctree <- function(ctree, trunc_time = NA, n_obs = NA) {
 
   nam <- ctree$nam
@@ -225,8 +284,7 @@ trunc_ctree <- function(ctree, trunc_time = NA, n_obs = NA) {
 
 
 #' Calculate primary observation times
-#'
-#' @export
+#' @param ptree Phylogenetic tree with host data
 calc_prim_obs <- function(ptree) {
 
   host <- ptree$host

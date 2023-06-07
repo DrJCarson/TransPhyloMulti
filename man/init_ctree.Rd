@@ -8,6 +8,8 @@ init_ctree(ptree, bottleneck = 1)
 }
 \arguments{
 \item{ptree}{Phylogenetic tree}
+
+\item{bottleneck}{Whether or not bottlenecking should be attempted}
 }
 \description{
 Create a transmission tree compatible with the provided phylogenetic tree

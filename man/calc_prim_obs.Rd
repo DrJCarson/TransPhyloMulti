@@ -6,6 +6,9 @@
 \usage{
 calc_prim_obs(ptree)
 }
+\arguments{
+\item{ptree}{Phylogenetic tree with host data}
+}
 \description{
 Calculate primary observation times
 }

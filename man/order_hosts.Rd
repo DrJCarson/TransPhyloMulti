@@ -7,7 +7,7 @@
 order_hosts(ctree)
 }
 \arguments{
-\item{ctree}{Current coloured tree.}
+\item{ctree}{Current coloured tree}
 }
 \description{
 Order hosts in a coloured tree

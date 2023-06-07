@@ -1,7 +1,7 @@
 #' Create a transmission tree compatible with the provided phylogenetic tree
-#' @param ptree Phylogenetic tree
 #'
-#' @export
+#' @param ptree Phylogenetic tree
+#' @param bottleneck Whether or not bottlenecking should be attempted
 init_ctree <- function(ptree, bottleneck = 1) {
 
   nam <- ptree$nam

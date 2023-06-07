@@ -2,13 +2,15 @@
 % Please edit documentation in R/proposals.R
 \name{remove_add}
 \alias{remove_add}
-\title{Proposal to move a transmission maintaining the same host}
+\title{Proposal to move a transmission whilst maintaining the same host}
 \usage{
 remove_add(ctree, pen.prob = 0, pen.size = 1, pen.len = 1, epsilon = 1)
 }
 \arguments{
-\item{ctree}{Current coloured tree.}
+\item{ctree}{Current coloured tree}
+
+\item{epsilon}{Scale for root time update proposals}
 }
 \description{
-Proposal to move a transmission maintaining the same host
+Proposal to move a transmission whilst maintaining the same host
 }

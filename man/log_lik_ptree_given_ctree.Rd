@@ -4,14 +4,16 @@
 \alias{log_lik_ptree_given_ctree}
 \title{Likelihood evaluation for a phylogenetic tree conditional on a transmission tree}
 \usage{
-log_lik_ptree_given_ctree(ctree, lm_const, lm_rate, hosts = NA)
+log_lik_ptree_given_ctree(ctree, kappa, lambda, hosts = NA)
 }
 \arguments{
-\item{ctree}{Combined tree.}
+\item{ctree}{Combined tree}
 
-\item{lm_const}{Initial pathogen population.}
+\item{kappa}{Initial pathogen population}
 
-\item{lm_rate}{Pathogen growth rate}
+\item{lambda}{Pathogen growth rate}
+
+\item{hosts}{Hosts over which likelihood is calculated}
 }
 \description{
 Likelihood evaluation for a phylogenetic tree conditional on a transmission tree

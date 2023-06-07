@@ -1,20 +1,21 @@
 #' Calculate transmission tree likelihood
 #'
-#' @param ttree Transmission tree.
-#' @param off.r Shape parameter for the number of offspring.
-#' @param off.p Probability parameter for the number of offspring.
-#' @param pi Probability of host being sampled.
-#' @param w.shape Shape parameter of generation time distribution.
-#' @param w.scale Scale parameter of generation time distribution.
-#' @param ws.shape Shape parameter of primary sampling time distribution.
-#' @param ws.scale Scale parameter of primary sampling time distribution.
-#' @param dateS Start time of outbreak sampling.
-#' @param dateT Stop time of outbreak sampling.
-#' @param delta Discrete time step.
-#'
-#' @export
+#' @param ttree Transmission tree
+#' @param grid Discrete grid over which to evaluate functions
+#' @param fn_list Precalculated discrete approximations of exclusion probabilities
+#' @param off.r Shape parameter for the number of offspring
+#' @param off.p Probability parameter for the number of offspring
+#' @param pi Probability of host being sampled
+#' @param w.shape Shape parameter of generation time distribution
+#' @param w.scale Scale parameter of generation time distribution
+#' @param ws.shape Shape parameter of primary sampling time distribution
+#' @param ws.scale Scale parameter of primary sampling time distribution
+#' @param obs.start Start time of outbreak sampling
+#' @param obs.end Stop time of outbreak sampling
+#' @param grid.delta Discrete time step
+#' @param hosts Hosts over which likelihood is calculated
 log_lik_ttree <- function(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.scale, ws.shape,
-                          ws.scale, dateS, dateT, delta = 1 / 365, hosts = NA) {
+                          ws.scale, obs.start, obs.end, grid.delta = 1 / 365, hosts = NA) {
 
   obs <- ttree$obs
   ttree <- ttree$ttree
@@ -23,7 +24,6 @@ log_lik_ttree <- function(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.sca
 
   omega <- fn_list$omega
   omega_bar <- fn_list$omega_bar
-#  phi <- fn_list$phi
   pit <- fn_list$pit
   gamma_prob <- fn_list$gamma_prob
 
@@ -37,7 +37,7 @@ log_lik_ttree <- function(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.sca
 
   for (i in hosts) {
 
-    tidx <- 1 + floor((dateT - ttree[i, 1]) / delta)
+    tidx <- 1 + floor((obs.end - ttree[i, 1]) / grid.delta)
 
     omega_int <- omega[tidx] + ((ttree[i, 1] - grid[tidx]) / (grid[tidx + 1] - grid[tidx])) * (omega[tidx + 1] - omega[tidx])
     omega_bar_int <- omega_bar[tidx] + ((ttree[i, 1] - grid[tidx]) / (grid[tidx + 1] - grid[tidx])) * (omega_bar[tidx + 1] - omega_bar[tidx])
@@ -95,32 +95,30 @@ log_lik_ttree <- function(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.sca
 
 #' Likelihood evaluation for the linear growth model
 #'
-#' @param infected_time Time at which individual was infected.
-#' @param final_time Lower bound of time period.
-#' @param start_time Upper bound of time period.
-#' @param lm_const Initial population vale.
-#' @param lm_rate Growth rate.
-#' @param branch_combs Number of possible coalescence possibilities.
-#' @param coalescence Whether or not a coalescence occurs at final_time.
-#'
-#' @export
+#' @param infected_time Time at which individual was infected
+#' @param final_time Lower bound of time period
+#' @param start_time Upper bound of time period
+#' @param kappa Initial population vale
+#' @param lambda Growth rate
+#' @param branch_combs Number of possible coalescence possibilities
+#' @param coalescence Whether or not a coalescence occurs at final_time
 log_likelihood_coalescence_linear <- function(infected_time, final_time,
-                                              start_time, lm_const, lm_rate,
+                                              start_time, kappa, lambda,
                                               branch_combs, coalescence) {
 
   if (coalescence == 1) {
 
-    if (lm_rate == 0) {
+    if (lambda == 0) {
 
-      log_likelihood_increment <- (-log(lm_const) * lm_const + branch_combs * final_time - branch_combs * start_time) / lm_const
+      log_likelihood_increment <- (-log(kappa) * kappa + branch_combs * final_time - branch_combs * start_time) / kappa
 
     } else {
 
-      log_likelihood_increment <- (- log(lm_rate * (final_time - infected_time) +
-                                          lm_const) - (branch_combs / lm_rate) * (log(
-                                            lm_rate * (start_time - infected_time) +
-                                              lm_const) - log(lm_rate * (final_time -
-                                                infected_time) + lm_const)))
+      log_likelihood_increment <- (- log(lambda * (final_time - infected_time) +
+                                          kappa) - (branch_combs / lambda) * (log(
+                                            lambda * (start_time - infected_time) +
+                                              kappa) - log(lambda * (final_time -
+                                                infected_time) + kappa)))
 
     }
 
@@ -128,15 +126,15 @@ log_likelihood_coalescence_linear <- function(infected_time, final_time,
 
     if (branch_combs > 0) {
 
-      if (lm_rate == 0) {
+      if (lambda == 0) {
 
-        log_likelihood_increment <- (branch_combs * final_time - branch_combs * start_time) / lm_const
+        log_likelihood_increment <- (branch_combs * final_time - branch_combs * start_time) / kappa
 
       } else {
 
-        log_likelihood_increment <- (- (branch_combs / lm_rate) * (log(lm_rate *
-                                (start_time - infected_time) + lm_const) - log(
-                                lm_rate * (final_time - infected_time) + lm_const)))
+        log_likelihood_increment <- (- (branch_combs / lambda) * (log(lambda *
+                                (start_time - infected_time) + kappa) - log(
+                                lambda * (final_time - infected_time) + kappa)))
 
       }
 
@@ -154,12 +152,11 @@ log_likelihood_coalescence_linear <- function(infected_time, final_time,
 
 #' Likelihood evaluation for a phylogenetic tree conditional on a transmission tree
 #'
-#' @param ctree Combined tree.
-#' @param lm_const Initial pathogen population.
-#' @param lm_rate Pathogen growth rate
-#'
-#' @export
-log_lik_ptree_given_ctree <- function(ctree, lm_const, lm_rate, hosts = NA) {
+#' @param ctree Combined tree
+#' @param kappa Initial pathogen population
+#' @param lambda Pathogen growth rate
+#' @param hosts Hosts over which likelihood is calculated
+log_lik_ptree_given_ctree <- function(ctree, kappa, lambda, hosts = NA) {
 
   log_lik <- 0
 
@@ -216,7 +213,7 @@ log_lik_ptree_given_ctree <- function(ctree, lm_const, lm_rate, hosts = NA) {
 
       }
 
-      log_lik <- log_lik + log_likelihood_coalescence_linear(inf_time, t2, t1, lm_const, lm_rate, choose(lineages, 2), is_coa)
+      log_lik <- log_lik + log_likelihood_coalescence_linear(inf_time, t2, t1, kappa, lambda, choose(lineages, 2), is_coa)
 
     }
 

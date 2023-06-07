@@ -1,110 +1,45 @@
-#' Numeric approximations (discretised) of branching process
+#' Simulate an ongoing outbreak with specified observation end date
 #'
-#' @param grid Discrete grid over which to evaluate functions.
-#' @param delta Discrete time step.
-#' @param off.r Shape parameter for the number of offspring.
-#' @param off.p Probability parameter for the number of offspring.
-#' @param pi Probability of host being sampled.
-#' @param w.shape Shape parameter of generation time distribution.
-#' @param w.scale Scale parameter of generation time distribution.
-#' @param ws.shape Shape parameter of primary sampling time distribution.
-#' @param ws.scale Scale parameter of primary sampling time distribution.
-#' @param dateS Start time of outbreak sampling.
-#' @param dateT Stop time of outbreak sampling.
-#' @export
-num_approx_disc <- function(grid,
-                            delta,
-                            off.r,
-                            off.p,
-                            pi,
-                            w.shape,
-                            w.scale,
-                            ws.shape,
-                            ws.scale,
-                            dateS,
-                            dateT) {
-
-  grid_size <- length(grid)
-
-  omega <- numeric(grid_size)
-  omega_bar <- numeric(grid_size)
-  phi <- numeric(grid_size)
-  pit <- numeric(grid_size)
-
-  omega[1] <- 1
-  omega_bar[1] <- 1
-  phi[1] <- 1
-
-  pit <- pi * (pgamma(dateT - grid, shape = ws.shape, scale = ws.scale) - pgamma(dateS - grid, shape = ws.shape, scale = ws.scale))
-
-  gamma_prob <- pgamma((0:(grid_size - 1)) * delta,  shape = w.shape, scale = w.scale) - pgamma((0:(grid_size - 1)) * delta - delta,  shape = w.shape, scale = w.scale)
-
-  ft <- 1 - cumsum(gamma_prob)
-
-  for (g in 2:grid_size) {
-
-    omega_bar[g] <- ft[g] + sum(gamma_prob[g:2] * omega[1:(g - 1)])
-
-#    phi[g] <- ((1 - off.p) / (1 - off.p * omega_bar[g])) ^ off.r
-
-
-    phi[g] <- (off.p / (1 - (1 - off.p) * omega_bar[g])) ^ off.r
-
-    omega[g] <- (1 - pit[g]) * phi[g]
-
-  }
-
-  return(list(omega = omega,
-              omega_bar = omega_bar,
-              phi = phi,
-              pit = pit,
-              gamma_prob = gamma_prob))
-
-}
-
-
-#' Simulate an ongoing outbreak
-#'
-#' @param off.r Shape parameter for the number of offspring.
-#' @param off.p Probability parameter for the number of offspring.
-#' @param lm_const Initial pathogen population.
-#' @param lm_rate Pathogen population linear growth rate.
-#' @param pi Probability of host being sampled.
-#' @param add.prob Probability of repeated samples.
-#' @param add.sep Time between repeated samples.
-#' @param w.shape Shape parameter of generation time distribution.
-#' @param w.scale Scale parameter of generation time distribution.
-#' @param ws.shape Shape parameter of primary sampling time distribution.
-#' @param ws.scale Scale parameter of primary sampling time distribution.
-#' @param w.mean Mean parameter of generation time distribution.
-#' @param w.std Standard deviation of generation time distribution.
-#' @param ws.mean Mean parameter of primary sampling time distribution.
-#' @param ws.std Standard deviation of primary sampling time distribution.
-#' @param dateStartOutbreak Outbreak start date.
-#' @param dateS Start time of outbreak sampling.
-#' @param dateT Stop time of outbreak sampling.
-#' @param delta Discrete time step.
+#' @param off.r Shape parameter for the number of offspring
+#' @param off.p Probability parameter for the number of offspring
+#' @param kappa Initial pathogen population
+#' @param lambda Pathogen population linear growth rate
+#' @param pi Probability of host being sampled
+#' @param sec.p Probability of repeated samples
+#' @param sec.t Time between repeated samples
+#' @param w.shape Shape parameter of generation time distribution
+#' @param w.scale Scale parameter of generation time distribution
+#' @param ws.shape Shape parameter of primary sampling time distribution
+#' @param ws.scale Scale parameter of primary sampling time distribution
+#' @param w.mean Mean parameter of generation time distribution
+#' @param w.std Standard deviation of generation time distribution
+#' @param ws.mean Mean parameter of primary sampling time distribution
+#' @param ws.std Standard deviation of primary sampling time distribution
+#' @param outbreak.start Outbreak start date
+#' @param obs.start Start time of outbreak sampling
+#' @param obs.end Stop time of outbreak sampling
+#' @param grid.delta Discrete time step
 #'
 #' @export
-sim_ongoing <- function(off.r = 1,
-                        off.p = 0.5,
-                        lm_const = 0.2,
-                        lm_rate = 0.2,
-                        pi = 0.5,
-                        add.prob = 0.1,
-                        add.sep = 14 / 365,
-                        w.shape = 2,
-                        w.scale = 1,
-                        ws.shape = NULL,
-                        ws.scale = NULL,
-                        w.mean = NULL,
-                        w.std = NULL,
-                        ws.mean = NULL,
-                        ws.std = NULL,
-                        dateStartOutbreak = 2000,
-                        dateS = NULL,
-                        dateT = 2010,
-                        delta = 1 / 365) {
+sim_ongoing_lim_t <- function(off.r = 2,
+                              off.p = 0.5,
+                              kappa = 0.2,
+                              lambda = 0.2,
+                              pi = 0.8,
+                              sec.p = 0.1,
+                              sec.t = 14 / 365,
+                              w.shape = 2,
+                              w.scale = 1,
+                              ws.shape = NULL,
+                              ws.scale = NULL,
+                              w.mean = NULL,
+                              w.std = NULL,
+                              ws.mean = NULL,
+                              ws.std = NULL,
+                              outbreak.start = 2000,
+                              obs.start = NULL,
+                              obs.end = 2010,
+                              grid.delta = 1 / 365) {
 
   if (!is.null(w.mean) && !is.null(w.std)) {
 
@@ -132,16 +67,16 @@ sim_ongoing <- function(off.r = 1,
 
   }
 
-  if (is.null(dateS)) {
+  if (is.null(obs.start)) {
 
-    dateS <- dateStartOutbreak
+    obs.start <- outbreak.start
 
   }
 
-  grid <- seq(dateT, dateStartOutbreak - delta, by = - delta)
+  grid <- seq(obs.end, outbreak.start - grid.delta, by = - grid.delta)
 
-  fn_list <- num_approx_disc(grid, delta, off.r, off.p, pi, w.shape, w.scale,
-                             ws.shape, ws.scale, dateS, dateT)
+  fn_list <- num_approx_disc(grid, off.r, off.p, pi, w.shape, w.scale,
+                             ws.shape, ws.scale, obs.start, obs.end)
 
   omega <- fn_list$omega
   omega_bar <- fn_list$omega_bar
@@ -151,17 +86,17 @@ sim_ongoing <- function(off.r = 1,
 
   repeat {
 
-    ttree <- matrix(0,1,3)
+    ttree <- matrix(0, 1, 3)
 
     i <- 1
     n <- 1
-    t_inf <- dateStartOutbreak
+    t_inf <- outbreak.start
 
     ttree[i, 1] <- t_inf
 
     repeat {
 
-      tidx <- 1 + round((dateT - t_inf) / delta)
+      tidx <- 1 + round((obs.end - t_inf) / grid.delta)
 
       if (runif(1) < (pit[tidx] / (1 - omega[tidx]))) {
 
@@ -228,7 +163,7 @@ sim_ongoing <- function(off.r = 1,
     ord <- c(which(!is.na(ttree[,2])), which(is.na(ttree[,2])))
     invord <- 1:length(ord)
     invord[ord] <- 1:length(ord)
-    ttree <- ttree[ord, , drop=FALSE]
+    ttree <- ttree[ord, , drop = FALSE]
     ttree[ttree[, 3] > 0, 3] <- invord[ttree[ttree[, 3] > 0, 3]]
 
     obs <- matrix(0, 0, 2)
@@ -241,7 +176,7 @@ sim_ongoing <- function(off.r = 1,
 
         t_sam <- t_inf + rgamma(1, shape = ws.shape, scale = ws.scale)
 
-        if (t_sam > dateS & t_sam < dateT) {
+        if (t_sam > obs.start & t_sam < obs.end) {
 
           break
 
@@ -253,9 +188,9 @@ sim_ongoing <- function(off.r = 1,
 
       repeat {
 
-        if ((t_sam + add.sep) < dateT & runif(1) < add.prob) {
+        if ((t_sam + sec.t) < obs.end & runif(1) < sec.p) {
 
-          t_sam <- t_sam + add.sep
+          t_sam <- t_sam + sec.t
 
           obs <- rbind(obs, c(t_sam, h))
 
@@ -268,8 +203,6 @@ sim_ongoing <- function(off.r = 1,
       }
 
     }
-
-
 
     phy_ord <- which(!(1:length(ttree[, 1]) %in% ttree[, 3]))
 
@@ -355,10 +288,15 @@ sim_ongoing <- function(off.r = 1,
 
             }
 
-            if (lm_rate==0)
-              coa_time <- t+log(1-runif(1))*lm_const/choose(length(lin),2)
-            else
-              coa_time <- inf_time + (1 / lm_rate) * ((1 - runif(1)) ^ (lm_rate / choose(length(lin), 2)) * (lm_rate * (t - inf_time) + lm_const) - lm_const)
+            if (lambda == 0) {
+
+              coa_time <- t + log(1 - runif(1)) * kappa / choose(length(lin), 2)
+
+            } else {
+
+              coa_time <- inf_time + (1 / lambda) * ((1 - runif(1)) ^ (lambda / choose(length(lin), 2)) * (lambda * (t - inf_time) + kappa) - kappa)
+
+            }
 
             if (coa_time > lim_time) {
 
@@ -448,48 +386,48 @@ sim_ongoing <- function(off.r = 1,
 }
 
 
-#' Simulate an ongoing outbreak
+#' Simulate an ongoing outbreak with specified number of observations
 #'
-#' @param off.r Shape parameter for the number of offspring.
-#' @param off.p Probability parameter for the number of offspring.
-#' @param lm_const Initial pathogen population.
-#' @param lm_rate Pathogen population linear growth rate.
-#' @param pi Probability of host being sampled.
-#' @param add.prob Probability of repeated samples.
-#' @param add.sep Time between repeated samples.
-#' @param w.shape Shape parameter of generation time distribution.
-#' @param w.scale Scale parameter of generation time distribution.
-#' @param ws.shape Shape parameter of primary sampling time distribution.
-#' @param ws.scale Scale parameter of primary sampling time distribution.
-#' @param w.mean Mean parameter of generation time distribution.
-#' @param w.std Standard deviation of generation time distribution.
-#' @param ws.mean Mean parameter of primary sampling time distribution.
-#' @param ws.std Standard deviation of primary sampling time distribution.
-#' @param dateStartOutbreak Outbreak start date.
-#' @param dateS Start time of outbreak sampling.
-#' @param delta Discrete time step.
-#' @param n_lim Maximum number of samples.
+#' @param off.r Shape parameter for the number of offspring
+#' @param off.p Probability parameter for the number of offspring
+#' @param kappa Initial pathogen population
+#' @param lambda Pathogen population linear growth rate
+#' @param pi Probability of host being sampled
+#' @param sec.p Probability of repeated samples
+#' @param sec.t Time between repeated samples
+#' @param w.shape Shape parameter of generation time distribution
+#' @param w.scale Scale parameter of generation time distribution
+#' @param ws.shape Shape parameter of primary sampling time distribution
+#' @param ws.scale Scale parameter of primary sampling time distribution
+#' @param w.mean Mean parameter of generation time distribution
+#' @param w.std Standard deviation of generation time distribution
+#' @param ws.mean Mean parameter of primary sampling time distribution
+#' @param ws.std Standard deviation of primary sampling time distribution
+#' @param outbreak.start Outbreak start date
+#' @param obs.start Start time of outbreak sampling
+#' @param grid.delta Discrete time step
+#' @param obs.lim Maximum number of samples
 #'
 #' @export
-sim_ongoing_n <- function(off.r = 1,
-                          off.p = 0.5,
-                          lm_const = 0.2,
-                          lm_rate = 0.2,
-                          pi = 0.5,
-                          add.prob = 0.1,
-                          add.sep = 14 / 365,
-                          w.shape = 2,
-                          w.scale = 1,
-                          ws.shape = NULL,
-                          ws.scale = NULL,
-                          w.mean = NULL,
-                          w.std = NULL,
-                          ws.mean = NULL,
-                          ws.std = NULL,
-                          dateStartOutbreak = 2000,
-                          dateS = NULL,
-                          delta = 1 / 365,
-                          n_lim = 200) {
+sim_ongoing_lim_obs <- function(off.r = 2,
+                                off.p = 0.5,
+                                kappa = 0.2,
+                                lambda = 0.2,
+                                pi = 0.8,
+                                sec.p = 0.1,
+                                sec.t = 14 / 365,
+                                w.shape = 2,
+                                w.scale = 1,
+                                ws.shape = NULL,
+                                ws.scale = NULL,
+                                w.mean = NULL,
+                                w.std = NULL,
+                                ws.mean = NULL,
+                                ws.std = NULL,
+                                outbreak.start = 2000,
+                                obs.start = NULL,
+                                grid.delta = 1 / 365,
+                                obs.lim = 100) {
 
 
   if (!is.null(w.mean) && !is.null(w.std)) {
@@ -518,9 +456,9 @@ sim_ongoing_n <- function(off.r = 1,
 
   }
 
-  if (is.null(dateS)) {
+  if (is.null(obs.start)) {
 
-    dateS <- dateStartOutbreak
+    obs.start <- outbreak.start
 
   }
 
@@ -533,12 +471,12 @@ sim_ongoing_n <- function(off.r = 1,
     t_lim1 <- Inf
     t_lim2 <- Inf
 
-    ttree <- matrix(0,1,3)
+    ttree <- matrix(0, 1, 3)
     obs <- matrix(0, 0, 2)
 
     i <- 1
     n <- 1
-    t_inf <- dateStartOutbreak
+    t_inf <- outbreak.start
 
     ttree[i, 1] <- t_inf
 
@@ -548,7 +486,7 @@ sim_ongoing_n <- function(off.r = 1,
 
         t_sam <- t_inf + rgamma(1, shape = ws.shape, scale = ws.scale)
 
-        if (t_sam > dateS & t_sam < t_lim2) {
+        if (t_sam > obs.start & t_sam < t_lim2) {
 
           ttree[i, 2] <- 1
 
@@ -556,9 +494,9 @@ sim_ongoing_n <- function(off.r = 1,
 
           repeat {
 
-            if ((t_sam + add.sep) < t_lim2 & runif(1) < add.prob) {
+            if ((t_sam + sec.t) < t_lim2 & runif(1) < sec.p) {
 
-              t_sam <- t_sam + add.sep
+              t_sam <- t_sam + sec.t
 
               obs <- rbind(obs, c(t_sam, i))
 
@@ -582,10 +520,10 @@ sim_ongoing_n <- function(off.r = 1,
 
       }
 
-      if (dim(obs)[1] > n_lim) {
+      if (dim(obs)[1] > obs.lim) {
 
-        t_lim1 <- sort(obs[, 1])[n_lim]
-        t_lim2 <- sort(obs[, 1])[n_lim + 1]
+        t_lim1 <- sort(obs[, 1])[obs.lim]
+        t_lim2 <- sort(obs[, 1])[obs.lim + 1]
 
       }
 
@@ -627,6 +565,12 @@ sim_ongoing_n <- function(off.r = 1,
 
     }
 
+    if (length(obs[, 1]) < obs.lim) {
+
+      next
+
+    }
+
     drop_obs <- which(obs[, 1] > t_lim1)
     keep_obs <- which(obs[, 1] <= t_lim1)
 
@@ -663,7 +607,7 @@ sim_ongoing_n <- function(off.r = 1,
     ord <- c(which(!is.na(ttree[,2])), which(is.na(ttree[,2])))
     invord <- 1:length(ord)
     invord[ord] <- 1:length(ord)
-    ttree <- ttree[ord, , drop=FALSE]
+    ttree <- ttree[ord, , drop = FALSE]
     ttree[ttree[, 3] > 0, 3] <- invord[ttree[ttree[, 3] > 0, 3]]
     obs[, 2] <- invord[obs[, 2]]
 
@@ -672,8 +616,6 @@ sim_ongoing_n <- function(off.r = 1,
       next
 
     }
-
-
 
     phy_ord <- which(!(1:length(ttree[, 1]) %in% ttree[, 3]))
 
@@ -694,7 +636,6 @@ sim_ongoing_n <- function(off.r = 1,
       phy_ord <- c(phy_ord, phy_ord_new)
 
     }
-
 
     sams <- length(obs[, 1])
 
@@ -759,13 +700,13 @@ sim_ongoing_n <- function(off.r = 1,
 
             }
 
-            if (lm_rate == 0) {
+            if (lambda == 0) {
 
-              coa_time <- t + log(1 - runif(1)) * lm_const / choose(length(lin), 2)
+              coa_time <- t + log(1 - runif(1)) * kappa / choose(length(lin), 2)
 
             } else {
 
-              coa_time <- inf_time + (1 / lm_rate) * ((1 - runif(1)) ^ (lm_rate / choose(length(lin), 2)) * (lm_rate * (t - inf_time) + lm_const) - lm_const)
+              coa_time <- inf_time + (1 / lambda) * ((1 - runif(1)) ^ (lambda / choose(length(lin), 2)) * (lambda * (t - inf_time) + kappa) - kappa)
 
             }
 
@@ -852,7 +793,7 @@ sim_ongoing_n <- function(off.r = 1,
 
   l <- trim_root(l)
 
-  return(list(ctree = l, dateT = 0.5 * (t_lim1 + t_lim2), attempts = attempts))
+  return(list(ctree = l, obs.end = 0.5 * (t_lim1 + t_lim2), attempts = attempts))
 
 }
 
@@ -860,46 +801,46 @@ sim_ongoing_n <- function(off.r = 1,
 
 #' Simulate an ongoing outbreak
 #'
-#' @param off.r Shape parameter for the number of offspring.
-#' @param off.p Probability parameter for the number of offspring.
-#' @param lm_const Initial pathogen population.
-#' @param lm_rate Pathogen population linear growth rate.
-#' @param pi Probability of host being sampled.
-#' @param sec_obs Number of secondary observations per host.
-#' @param obs_sep Time between repeated observations.
-#' @param w.shape Shape parameter of generation time distribution.
-#' @param w.scale Scale parameter of generation time distribution.
-#' @param ws.shape Shape parameter of primary sampling time distribution.
-#' @param ws.scale Scale parameter of primary sampling time distribution.
-#' @param w.mean Mean parameter of generation time distribution.
-#' @param w.std Standard deviation of generation time distribution.
-#' @param ws.mean Mean parameter of primary sampling time distribution.
-#' @param ws.std Standard deviation of primary sampling time distribution.
-#' @param dateStartOutbreak Outbreak start date.
-#' @param dateS Start time of outbreak sampling.
-#' @param delta Discrete time step.
-#' @param n_hosts Number of sampled hosts.
+#' @param off.r Shape parameter for the number of offspring
+#' @param off.p Probability parameter for the number of offspring
+#' @param kappa Initial pathogen population
+#' @param lambda Pathogen population linear growth rate
+#' @param pi Probability of host being sampled
+#' @param sec.n Number of secondary observations per host
+#' @param sec.t Time between repeated observations
+#' @param w.shape Shape parameter of generation time distribution
+#' @param w.scale Scale parameter of generation time distribution
+#' @param ws.shape Shape parameter of primary sampling time distribution
+#' @param ws.scale Scale parameter of primary sampling time distribution
+#' @param w.mean Mean parameter of generation time distribution
+#' @param w.std Standard deviation of generation time distribution
+#' @param ws.mean Mean parameter of primary sampling time distribution
+#' @param ws.std Standard deviation of primary sampling time distribution
+#' @param outbreak.start Outbreak start date
+#' @param obs.start Start time of outbreak sampling
+#' @param grid.delta Discrete time step
+#' @param host.lim Number of sampled hosts
 #'
 #' @export
-sim_ongoing_h <- function(off.r = 1,
-                          off.p = 0.5,
-                          lm_const = 0.2,
-                          lm_rate = 0.2,
-                          pi = 0.5,
-                          sec_obs = 1,
-                          obs_sep = 14 / 365,
-                          w.shape = 2,
-                          w.scale = 1,
-                          ws.shape = NULL,
-                          ws.scale = NULL,
-                          w.mean = NULL,
-                          w.std = NULL,
-                          ws.mean = NULL,
-                          ws.std = NULL,
-                          dateStartOutbreak = 2000,
-                          dateS = NULL,
-                          delta = 1 / 365,
-                          n_hosts = 200) {
+sim_ongoing_lim_hosts <- function(off.r = 2,
+                                  off.p = 0.5,
+                                  kappa = 0.2,
+                                  lambda = 0.2,
+                                  pi = 0.8,
+                                  sec.n = 1,
+                                  sec.t = 14 / 365,
+                                  w.shape = 2,
+                                  w.scale = 1,
+                                  ws.shape = NULL,
+                                  ws.scale = NULL,
+                                  w.mean = NULL,
+                                  w.std = NULL,
+                                  ws.mean = NULL,
+                                  ws.std = NULL,
+                                  outbreak.start = 2000,
+                                  obs.start = NULL,
+                                  grid.delta = 1 / 365,
+                                  host.lim = 200) {
 
 
   if (!is.null(w.mean) && !is.null(w.std)) {
@@ -928,9 +869,9 @@ sim_ongoing_h <- function(off.r = 1,
 
   }
 
-  if (is.null(dateS)) {
+  if (is.null(obs.start)) {
 
-    dateS <- dateStartOutbreak
+    obs.start <- outbreak.start
 
   }
 
@@ -952,7 +893,7 @@ sim_ongoing_h <- function(off.r = 1,
 
     i <- 1
     n <- 1
-    t_inf <- dateStartOutbreak
+    t_inf <- outbreak.start
 
     ttree[i, 1] <- t_inf
 
@@ -962,7 +903,7 @@ sim_ongoing_h <- function(off.r = 1,
 
         t_sam <- t_inf + rgamma(1, shape = ws.shape, scale = ws.scale)
 
-        if (t_sam > dateS & t_sam < t_lim2) {
+        if (t_sam > obs.start & t_sam < t_lim2) {
 
           ttree[i, 2] <- 1
 
@@ -973,9 +914,9 @@ sim_ongoing_h <- function(off.r = 1,
 
           j <- 1
 
-          while (j <= sec_obs) {
+          while (j <= sec.n) {
 
-            t_sam <- t_sam + obs_sep
+            t_sam <- t_sam + sec.t
 
             obs <- rbind(obs, c(t_sam, i))
 
@@ -995,10 +936,10 @@ sim_ongoing_h <- function(off.r = 1,
 
       }
 
-      if (length(prim_obs) > n_hosts) {
+      if (length(prim_obs) > host.lim) {
 
-        t_lim1 <- sort(prim_obs)[n_hosts]
-        t_lim2 <- sort(prim_obs)[n_hosts + 1]
+        t_lim1 <- sort(prim_obs)[host.lim]
+        t_lim2 <- sort(prim_obs)[host.lim + 1]
 
       }
 
@@ -1040,13 +981,13 @@ sim_ongoing_h <- function(off.r = 1,
 
     }
 
-    if (length(prim_obs) < n_hosts) {
+    if (length(prim_obs) < host.lim) {
 
       next
 
     }
 
-    keep_hosts <- prim_host[order(prim_obs)[1:n_hosts]]
+    keep_hosts <- prim_host[order(prim_obs)[1:host.lim]]
 
     keep_obs <- which(obs[, 2] %in% keep_hosts)
     drop_obs <- which(!(obs[, 2] %in% keep_hosts))
@@ -1094,8 +1035,6 @@ sim_ongoing_h <- function(off.r = 1,
 
     }
 
-
-
     phy_ord <- which(!(1:length(ttree[, 1]) %in% ttree[, 3]))
 
     repeat {
@@ -1115,7 +1054,6 @@ sim_ongoing_h <- function(off.r = 1,
       phy_ord <- c(phy_ord, phy_ord_new)
 
     }
-
 
     sams <- length(obs[, 1])
 
@@ -1180,13 +1118,13 @@ sim_ongoing_h <- function(off.r = 1,
 
             }
 
-            if (lm_rate == 0) {
+            if (lambda == 0) {
 
-              coa_time <- t + log(1 - runif(1)) * lm_const / choose(length(lin), 2)
+              coa_time <- t + log(1 - runif(1)) * kappa / choose(length(lin), 2)
 
             } else {
 
-              coa_time <- inf_time + (1 / lm_rate) * ((1 - runif(1)) ^ (lm_rate / choose(length(lin), 2)) * (lm_rate * (t - inf_time) + lm_const) - lm_const)
+              coa_time <- inf_time + (1 / lambda) * ((1 - runif(1)) ^ (lambda / choose(length(lin), 2)) * (lambda * (t - inf_time) + kappa) - kappa)
 
             }
 
@@ -1273,7 +1211,7 @@ sim_ongoing_h <- function(off.r = 1,
 
   l <- trim_root(l)
 
-  return(list(ctree = l, dateT = 0.5 * (t_lim1 + t_lim2), attempts = attempts))
+  return(list(ctree = l, obs.end = 0.5 * (t_lim1 + t_lim2), attempts = attempts))
 
 }
 
