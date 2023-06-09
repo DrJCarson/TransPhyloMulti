@@ -17,7 +17,8 @@ inferTTreeM(
   mcmc.length = 12000,
   mcmc.thinning = 1,
   mcmc.tree.updates = NA,
-  mcmc.cov = NA,
+  mcmc.cov.tr = NA,
+  mcmc.cov.coa = NA,
   init.r = 2,
   init.p = 0.5,
   init.pi = 0.5,
@@ -71,7 +72,9 @@ inferTTreeM(
 
 \item{mcmc.tree.updates}{Number of transmission tree updates per parameter update}
 
-\item{mcmc.cov}{Initial proposal covariance}
+\item{mcmc.cov.tr}{Initial proposal covariance for transmission parameters}
+
+\item{mcmc.cov.coa}{Initial proposal covariance for coalescent parameters}
 
 \item{init.r}{Starting value of offspring distribution parameter r}
 
