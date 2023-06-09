@@ -14,32 +14,36 @@ inferTTreeM(
   w.std = NA,
   ws.mean = NA,
   ws.std = NA,
-  mcmcIterations = 1000,
-  thinning = 1,
-  tree_updates = 1,
-  start_const = 2,
-  start_rate = 2,
-  startOff.r = 1,
-  startOff.p = 0.5,
-  startPi = 0.5,
-  updateconst = TRUE,
-  updaterate = TRUE,
-  updateOff.r = TRUE,
-  updateOff.p = FALSE,
-  updatePi = TRUE,
-  qconst = NA,
-  qrate = NA,
-  qcr = NA,
-  qOff.r = NA,
-  qOff.p = NA,
-  qPi = NA,
-  bw = 0.8,
-  rd = 1,
-  startCTree = NA,
-  updateTTree = TRUE,
-  dateS = -Inf,
-  dateT = Inf,
-  delta = NA,
+  mcmc.length = 12000,
+  mcmc.thinning = 1,
+  mcmc.tree.updates = NA,
+  mcmc.cov.tr = NA,
+  mcmc.cov.coa = NA,
+  init.r = 2,
+  init.p = 0.5,
+  init.pi = 0.5,
+  init.kappa = 0.5,
+  init.lambda = 0.5,
+  init.ctree = NA,
+  update.r = T,
+  update.p = F,
+  update.pi = T,
+  update.kappa = T,
+  update.lambda = T,
+  update.ctree = T,
+  r.shape = 1,
+  r.scale = 1,
+  p.shape1 = 1,
+  p.shape2 = 1,
+  pi.shape1 = 1,
+  pi.shape2 = 1,
+  kappa.shape = 1,
+  kappa.scale = 1,
+  lambda.shape = 1,
+  lambda.scale = 1,
+  obs.start = -Inf,
+  obs.end = NA,
+  grid.delta = NA,
   verbose = F
 )
 }
@@ -62,49 +66,65 @@ inferTTreeM(
 
 \item{ws.std}{Std of the Gamma distribution representing the sampling time}
 
-\item{mcmcIterations}{Number of MCMC iterations to run the algorithm for}
+\item{mcmc.length}{Number of MCMC iterations to run the algorithm for}
 
-\item{thinning}{MCMC thinning interval between two sampled iterations}
+\item{mcmc.thinning}{MCMC thinning interval between two sampled iterations}
 
-\item{start_const}{Starting value of within-host population size}
+\item{mcmc.tree.updates}{Number of transmission tree updates per parameter update}
 
-\item{start_rate}{Starting value for the within-host population growth rate}
+\item{mcmc.cov.tr}{Initial proposal covariance for transmission parameters}
 
-\item{startOff.r}{Starting value of parameter off.r}
+\item{mcmc.cov.coa}{Initial proposal covariance for coalescent parameters}
 
-\item{startOff.p}{Starting value of parameter off.p}
+\item{init.r}{Starting value of offspring distribution parameter r}
 
-\item{startPi}{Starting value of sampling proportion pi}
+\item{init.p}{Starting value of offspring distribution parameter p}
 
-\item{updateconst}{Whether of not to update the parameter lm_const}
+\item{init.pi}{Starting value of sampling proportion pi}
 
-\item{updaterate}{Whether of not to update the parameter lm_rate}
+\item{init.kappa}{Starting value for the initial within-host population size}
 
-\item{updateOff.r}{Whether or not to update the parameter off.r}
+\item{init.lambda}{Starting value for the within-host population growth rate}
 
-\item{updateOff.p}{Whether or not to update the parameter off.p}
+\item{init.ctree}{Starting value for the combined tree}
 
-\item{updatePi}{Whether or not to update the parameter pi}
+\item{update.r}{Whether to update the parameter r}
 
-\item{qconst}{Proposal kernel range for parameter lm_const}
+\item{update.p}{Whether to update the parameter p}
 
-\item{qrate}{Proposal kernel range for parameter lm_rate}
+\item{update.pi}{Whether to update the parameter pi}
 
-\item{qOff.r}{Proposal kernel range for parameter Off.r}
+\item{update.kappa}{Whether to update the parameter kappa}
 
-\item{qOff.p}{Proposal kernel range for parameter Off.p}
+\item{update.lambda}{Whether to update the parameter lambda}
 
-\item{qPi}{Proposal kernel range for parameter pi}
+\item{update.ctree}{Whether to update the transmission tree}
 
-\item{startCTree}{Optional combined tree to start from}
+\item{r.shape}{Shape parameter for the Gamma prior of parameter r}
 
-\item{updateTTree}{Whether or not to update the transmission tree}
+\item{r.scale}{Scale parameter for the Gamma prior of parameter r}
 
-\item{dateS}{Date when observations start}
+\item{p.shape1}{Shape1 parameter for the Beta prior of parameter p}
 
-\item{dateT}{Date when process stops (this can be Inf for fully simulated outbreaks)}
+\item{p.shape2}{Shape2 parameter for the Beta prior of parameter p}
 
-\item{delta}{Grid precision (smaller is better but slower)}
+\item{pi.shape1}{Shape1 parameter for the Beta prior of parameter pi}
+
+\item{pi.shape2}{Shape2 parameter for the Beta prior of parameter pi}
+
+\item{kappa.shape}{Shape parameter for the Gamma prior of parameter kappa}
+
+\item{kappa.scale}{Scale parameter for the Gamma prior of parameter kappa}
+
+\item{lambda.shape}{Shape parameter for the Gamma prior of parameter lambda}
+
+\item{lambda.scale}{Scale parameter for the Gamma prior of parameter lambda}
+
+\item{obs.start}{Start date for observations}
+
+\item{obs.end}{End date for observations}
+
+\item{grid.delta}{Grid resolution for approximating exclusion probabilities}
 
 \item{verbose}{Whether or not to use verbose mode (default is false)}
 }

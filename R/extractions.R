@@ -1,4 +1,5 @@
 #' Extracts phylogenetic tree from a combined phylogenetic/transmission tree
+#'
 #' @param ctree Combined tree
 #'
 #' @export
@@ -41,7 +42,9 @@ extractPTreeM <- function(ctree)  {
 
 
 #' Extracts transmission tree from a combined phylogenetic/transmission tree
+#'
 #' @param ctree Combined tree
+#'
 #' @export
 extractTTreeM <- function(ctree)  {
 

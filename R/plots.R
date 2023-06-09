@@ -81,6 +81,7 @@ plotTTree_summ = function(ttree, showLabels = T, maxTime = NA, cex = 1) {
 
 
 #' Plot a transmission tree in a detailed format
+#'
 #' @param ttree Transmission tree
 #' @param w.shape Shape parameter of the Gamma probability density function representing the generation time
 #' @param w.scale Scale parameter of the Gamma probability density function representing the generation time
@@ -184,6 +185,7 @@ plotTTree_det = function(ttree, w.shape, w.scale, showLabels = TRUE, maxTime = N
 
 
 #' Plot MCMC traces
+#'
 #' @param record Output from inferTTree function
 #' @param burnin Proportion of the MCMC output to be discarded as burnin
 #' @return Returns invisibly the first parameter
@@ -203,16 +205,16 @@ plotTracesM <- function(record, burnin = 0) {
   plot(sapply(record, function(x) x$pi), ylab = 'Sampling proportion pi',
        xlab = 'MCMC iterations', type = 'l')
 
-  plot(sapply(record, function(x) x$lm_const), ylab = 'Within-host initial population lm_const',
-       xlab = 'MCMC iterations', type = 'l')
-
-  plot(sapply(record, function(x) x$lm_rate), ylab = 'Within-host population growth rate lm_rate',
-       xlab = 'MCMC iterations', type = 'l')
-
   plot(sapply(record, function(x) x$off.r), ylab = 'off.r',
        xlab = 'MCMC iterations', type = 'l')
 
   plot(sapply(record, function(x) x$off.p), ylab = 'off.p',
+       xlab = 'MCMC iterations', type = 'l')
+
+  plot(sapply(record, function(x) x$kappa), ylab = 'Within-host initial population kappa',
+       xlab = 'MCMC iterations', type = 'l')
+
+  plot(sapply(record, function(x) x$lambda), ylab = 'Within-host population growth rate lambda',
        xlab = 'MCMC iterations', type = 'l')
 
   return(invisible(record))

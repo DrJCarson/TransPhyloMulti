@@ -1,8 +1,10 @@
 #' Converts an ape phylo object into a phylogenetic tree with host information
+#'
 #' @param tr phylo object
 #' @param dateLastSample date of the last sample
 #' @param host Optional host information, if not present the leaf names needs to contain this, eg 1.1 etc
 #' @return phylogenetic tree
+#'
 #' @export
 ptreeFromPhyloM <- function(tr,dateLastSample,host) {
   if (!missing(host)) {
@@ -30,8 +32,10 @@ ptreeFromPhyloM <- function(tr,dateLastSample,host) {
 }
 
 #' Converts a resTransPhyloM into a resTransPhylo
+#'
 #' @param r object of class resTransPhyloM which is the output of inferTTreeM
 #' @return object of class resTransPhylo produced by removing non-first samples
+#'
 #' @export
 removeMulti <- function(r) {
   res=r
@@ -43,7 +47,7 @@ removeMulti <- function(r) {
   }
   wrl=which(remleaves)
   for (i in 1:length(res)) {
-    res[[i]]$neg=res[[i]]$lm_const
+    res[[i]]$neg=res[[i]]$kappa
     nam=res[[i]]$ctree$nam[remleaves==F]
     nam=unlist(strsplit(nam,'\\.'))
     nam=nam[seq(1,length(nam),2)]
@@ -82,9 +86,11 @@ removeMulti <- function(r) {
 }
 
 #' Return the medoid from a resTransPhyloM
+#'
 #' @param record Output from inferTTreeM function
 #' @param burnin Proportion of the MCMC output to be discarded as burnin
 #' @return The medoid
+#'
 #' @export
 medTTreeM = function(record,burnin=0.5)
 {

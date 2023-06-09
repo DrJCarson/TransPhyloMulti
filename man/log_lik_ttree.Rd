@@ -15,34 +15,40 @@ log_lik_ttree(
   w.scale,
   ws.shape,
   ws.scale,
-  dateS,
-  dateT,
-  delta = 1/365,
+  obs.start,
+  obs.end,
+  grid.delta = 1/365,
   hosts = NA
 )
 }
 \arguments{
-\item{ttree}{Transmission tree.}
+\item{ttree}{Transmission tree}
 
-\item{off.r}{Shape parameter for the number of offspring.}
+\item{grid}{Discrete grid over which to evaluate functions}
 
-\item{off.p}{Probability parameter for the number of offspring.}
+\item{fn_list}{Precalculated discrete approximations of exclusion probabilities}
 
-\item{pi}{Probability of host being sampled.}
+\item{off.r}{Shape parameter for the number of offspring}
 
-\item{w.shape}{Shape parameter of generation time distribution.}
+\item{off.p}{Probability parameter for the number of offspring}
 
-\item{w.scale}{Scale parameter of generation time distribution.}
+\item{pi}{Probability of host being sampled}
 
-\item{ws.shape}{Shape parameter of primary sampling time distribution.}
+\item{w.shape}{Shape parameter of generation time distribution}
 
-\item{ws.scale}{Scale parameter of primary sampling time distribution.}
+\item{w.scale}{Scale parameter of generation time distribution}
 
-\item{dateS}{Start time of outbreak sampling.}
+\item{ws.shape}{Shape parameter of primary sampling time distribution}
 
-\item{dateT}{Stop time of outbreak sampling.}
+\item{ws.scale}{Scale parameter of primary sampling time distribution}
 
-\item{delta}{Discrete time step.}
+\item{obs.start}{Start time of outbreak sampling}
+
+\item{obs.end}{Stop time of outbreak sampling}
+
+\item{grid.delta}{Discrete time step}
+
+\item{hosts}{Hosts over which likelihood is calculated}
 }
 \description{
 Calculate transmission tree likelihood

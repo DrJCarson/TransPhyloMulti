@@ -8,11 +8,13 @@ vignette: >
   %\VignetteIndexEntry{Testing TransPhyloMulti}
   %\usepackage[utf8]{inputenc}
 ---
+
 ```{r echo=F}
 knitr::opts_chunk$set(fig.width=6, fig.height=4) 
 ```
 
 If you want to reproduce exactly the same results as the ones shown in this vignette, you need to set the seed of your random number generator to zero:
+
 ```{r}
 library(TransPhylo)
 library(TransPhyloMulti)
@@ -22,6 +24,7 @@ set.seed(0)
 # Simulation
 
 The offspring distribution is negative binomial with mean equal to the basic reproduction number $R=2$. Both the generation time and the sampling time are Gamma distributed with parameters (10,0.1) which has a mean of 1 year. The density of sampling is $\pi=0.25$. The following commands specify these parameters:
+
 ```{r}
 off.r=2
 w.shape=10
@@ -30,20 +33,21 @@ pi=0.25
 ```
 
 For the within-host population size we consider a linear growth model starting from a size of 0.5 and increasing with a rate of 0.5:
+
 ```{r}
-lm_const=0.5
-lm_rate=0.5
-plot(c(0,3),lm_const+c(0,3)*lm_rate,xlab='Time since infection',
-     ylab='Within host effective population size',type='l',ylim=c(0,lm_const+3*lm_rate))
+kappa=0.5
+lambda=0.5
+plot(c(0,3),kappa+c(0,3)*lambda,xlab='Time since infection',
+     ylab='Within host effective population size',type='l',ylim=c(0,kappa+3*lambda))
 ```
 
 We simulate an outbreak that starts in 2005 and which and is observed up to 2013:
 
 ```{r}
-dateT=2013
-simu <- sim_ongoing(pi=pi,off.r=off.r,w.shape=w.shape,
-                    w.scale=w.scale,dateStartOutbreak=2005,dateT=dateT,add.prob = 0.6,
-                    lm_const = lm_const,lm_rate = lm_rate)
+obs.end=2013
+simu <- sim_ongoing_lim_t(pi=pi,off.r=off.r,w.shape=w.shape,
+                    w.scale=w.scale,outbreak.start=2005,obs.end=obs.end,sec.p = 0.6,
+                    kappa = kappa,lambda = lambda)
 ```
 
 This simulation contains both the transmission tree between infected hosts and the within-host phylogenetic tree of each host. This can be visualised as a colored phylogenetic tree, where each host is represented by a unique color:
@@ -83,10 +87,7 @@ axisPhylo(backward = F)
 
 # Inference
 
-Typically inference would start with a phylogenetic tree stored in a Newick file.
-We also need to know the date of the last sample, in order to know the absolute dates of
-all nodes in the tree. Let's write the tree from the simulation above to a Newick file,
-read it and combine with the known date of the last sample to produce an absolutely dated tree:
+Typically inference would start with a phylogenetic tree stored in a Newick file. We also need to know the date of the last sample, in order to know the absolute dates of all nodes in the tree. Let's write the tree from the simulation above to a Newick file, read it and combine with the known date of the last sample to produce an absolutely dated tree:
 
 ```{r}
 write.tree(p,'tree.nwk')
@@ -97,9 +98,9 @@ ptree=ptreeFromPhyloM(p,dateLastSample = dateLastSample(simu))
 Now we can perform inference of the transmission tree given this dated phylogenetic tree:
 
 ```{r,results='hide'}
-res<-inferTTreeM(ptree,mcmcIterations=100,w.shape=w.shape,w.scale=w.scale,dateT=dateT,
-                 startPi=0.25,updatePi=T,startOff.r=2,updateOff.r=T,start_const=1,start_rate=1,
-                 updateconst = T,updaterate=T)
+res<-inferTTreeM(ptree,mcmc.length=100,w.shape=w.shape,w.scale=w.scale,obs.end=obs.end,
+                 init.pi=0.25,update.pi=T,init.r=2,update.r=T,init.kappa=1,update.kappa = T, 
+                 init.lambda=1, update.lambda = T)
 ```
 
 We can plot the traces of the MCMC:
@@ -115,6 +116,7 @@ res2=removeMulti(res)
 mat=computeMatWIW(res2)
 lattice::levelplot(mat,xlab='',ylab='')
 ```
+
 Let's compute the medoid tree:
 
 ```{r}
