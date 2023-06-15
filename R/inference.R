@@ -475,7 +475,7 @@ inferTTreeM <- function(ptree,
 
       ss.u.coa <- log(runif(1))
 
-      if (parms.prop.coa["kappa"] > 0 & parms.prop.coa["lambda"] > 0) {
+      if (parms.prop.coa["kappa"] >= 0 & parms.prop.coa["lambda"] >= 0) {
 
         pPTree2 <- log_lik_ptree_given_ctree(ctree, parms.prop.coa[["kappa"]],
                                              parms.prop.coa[["lambda"]], NA)
