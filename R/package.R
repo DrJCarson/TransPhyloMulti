@@ -1,5 +1,5 @@
 #' @name TransPhyloMulti
-#' @title TransPhyloMulti: ransPhylo With Multiple Samples Per Host
+#' @title TransPhyloMulti: TransPhylo With Multiple Samples Per Host
 #'
 #' @description TransPhyloMulti is a R package extending TransPhylo to allow multiple samples per host.
 #'
