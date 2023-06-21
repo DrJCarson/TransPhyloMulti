@@ -2,7 +2,7 @@
 % Please edit documentation in R/package.R
 \name{TransPhyloMulti}
 \alias{TransPhyloMulti}
-\title{TransPhyloMulti: ransPhylo With Multiple Samples Per Host}
+\title{TransPhyloMulti: TransPhylo With Multiple Samples Per Host}
 \description{
 TransPhyloMulti is a R package extending TransPhylo to allow multiple samples per host.
 }

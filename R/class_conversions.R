@@ -77,9 +77,7 @@ removeMulti <- function(r) {
     ctree=ctree[!rem,]
     w=which(ctree[,2]>0);ctree[w,2]=map[ctree[w,2]]
     w=which(ctree[,3]>0);ctree[w,3]=map[ctree[w,3]]
-    .computeHost <- getFromNamespace(".computeHost", "TransPhylo")
-    ctree[,4]=.computeHost(ctree)
-    res[[i]]$ctree$ctree=ctree
+    res[[i]]$ctree$ctree=order_hosts(ctree)
   }
   class(res)<-'resTransPhylo'
   return(res)

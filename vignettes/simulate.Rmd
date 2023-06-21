@@ -109,17 +109,15 @@ We can plot the traces of the MCMC:
 plot(res)
 ```
 
+Let's see what the colored tree looks like at the end of the MCMC:
+
+```{r}
+plot(res[[length(res)]]$ctree)
+```
+
 Let's compute the matrix of who infected whom:
 
 ```{r}
-res2=removeMulti(res)
-mat=computeMatWIW(res2)
+mat=computeMatWIWM(res)
 lattice::levelplot(mat,xlab='',ylab='')
-```
-
-Let's compute the medoid tree:
-
-```{r}
-med=medTTreeM(res)
-plot(med)
 ```
