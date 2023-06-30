@@ -1,1 +1,77 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # TransPhyloMulti
+
+![GitHub](https://img.shields.io/github/license/DrJCarson/TransPhyloMulti)
+
+# Introduction
+
+TransPhyloMulti is an extension of
+[TransPhylo](https://github.com/xavierdidelot/TransPhylo) which allows
+the use of multiple genomes per host. It also relaxes the assumption of
+a complete transmission bottleneck, and allows the within-host
+population to follow a linear growth model.
+
+For a more formal description of TransPhyloMulti, see the following
+paper:
+
+Carson et al (2023). Inference of infectious disease transmission using
+multiple genomes per host. In preparation.
+
+## Installation
+
+You can install TransPhyloMulti from github with:
+
+``` r
+devtools::install_github("DrJCarson/TransPhyloMulti")
+```
+
+The package can then be loaded using:
+
+``` r
+library(TransPhyloMulti)
+```
+
+## Basic usage
+
+You will need as input a dated phylogeny built for example using
+[BEAST](https://www.beast2.org/),
+[BactDating](https://github.com/xavierdidelot/BactDating) or
+[treedater](https://github.com/emvolz/treedater). This dated phylogeny
+should be stored in the object `dated_tree` of class phylo from the ape
+package. Since this only includes relative rather than absolute dating,
+you also need to know the date when the last sample was taken, let’s say
+on the 1st July 2022. You will also need a named vector `hosts`
+indicating the host from which each of the leaves was sampled. You can
+load and plot this data to make sure it looks correct:
+
+``` r
+pt=ptreeFromPhyloM(dated_tree,lubridate::decimal_date(as.Date('2022/7/1')),hosts)
+plot(pt)
+```
+
+You can then infer the transmission tree and associated parameters using
+for example:
+
+``` r
+res=inferTTreeM(pt,w.shape=2,w.scale=2,obs.end=lubridate::decimal_date(as.Date('2023/1/1')))
+plot(res)
+```
+
+Note that the parameters `w.shape` and `w.scale` specify a gamma
+distribution that needs to be appropriate to represent the generation
+time distribution of the pathogen under investigation. It is also
+important to input the date when sampling of cases ended, for example
+the 1st January 2023 in the code above.
+
+## More information and getting help
+
+For more detailed examples of how to use TransPhyloMulti, see the
+vignettes
+[here](https://github.com/DrJCarson/TransPhyloMulti/tree/master/vignettes).
+See also the help included in the package using the R command
+`help(package='TransPhyloMulti')`.
+
+If you have any problem or question please create an issue
+[here](https://github.com/DrJCarson/TransPhyloMulti/issues)
