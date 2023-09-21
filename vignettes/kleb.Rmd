@@ -1,0 +1,70 @@
+---
+title: "Application of TransPhyloMulti to Klebsiella pneumoniae dataset"
+author: "Xavier Didelot"
+date: '`r Sys.Date()`'
+output: pdf_document
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Application of TransPhyloMulti to Klebsiella pneumoniae dataset}
+  %\usepackage[utf8]{inputenc}
+---
+
+First we load the libraries we need using:
+```{r}
+library(ape)
+library(TransPhylo)
+library(TransPhyloMulti)
+```
+
+We set the random number generator so that results are perfectly reproducible.
+```{r}
+set.seed(0)
+```
+
+We load and plot the dated phylogenetic tree.
+```{r}
+td=read.nexus('kleb.nwk')
+plot(td)
+axisPhylo(1,backward = F)
+```
+
+Note that the time scale is in days and convert it to years.
+```{r}
+td$edge.length=td$edge.length/365
+```
+
+Note also that host names are included in the first part of the tip labels and extract them into a named vector.
+```{r}
+hosts=unlist(strsplit(td$tip.label,'-'))[seq(1,Ntip(td)*2,2)]
+names(hosts)=td$tip.label
+```
+
+We can now combine the tree, host information, and date of the last sample (17th July 2015) to produce the input, and plot it to check that everything looks correct.
+```{r}
+pt=ptreeFromPhyloM(td,lubridate::decimal_date(as.Date('2015/07/17')),hosts)
+plot(pt)
+```
+
+We can now run the inference of the transmission tree. To keep this vignette quick to compile we will do only 1e2 iterations but this should be replaced with 1e5 to achieve good convergence and mixing of the MCMC.
+```{r}
+res=inferTTreeM(pt,mcmc.length=1e2,mcmc.thinning=1,w.shape=1,w.scale=0.5,obs.end=2016)
+```
+
+Show what the parameters were inferred to be.
+```{r}
+print(res)
+```
+
+Let's plot the colored tree for the iteration with the highest posterior probability.
+```{r}
+ps=unlist(lapply(res,function (x) x$pTTree+x$pPTree))
+w=which(ps==max(ps))
+m=res[[w]]$ctree
+plot(m)
+```
+
+Let's plot the matrix of probabilities of who infected whom:
+```{r}
+mat=computeMatWIWM(res)
+lattice::levelplot(mat,xlab='Infector',ylab='Infected',at=seq(0,1,length.out=20))
+```
