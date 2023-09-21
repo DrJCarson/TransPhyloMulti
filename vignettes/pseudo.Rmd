@@ -1,0 +1,66 @@
+---
+title: "Application of TransPhyloMulti to Pseudomonas aeruginosa dataset"
+author: "Xavier Didelot"
+date: '`r Sys.Date()`'
+output: pdf_document
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Application of TransPhyloMulti to Pseudomonas aeruginosa dataset}
+  %\usepackage[utf8]{inputenc}
+---
+
+First we load the libraries we need using:
+```{r}
+library(ape)
+library(TransPhylo)
+library(TransPhyloMulti)
+```
+
+We set the random number generator so that results are perfectly reproducible.
+```{r}
+set.seed(0)
+```
+
+We load and plot the dated phylogenetic tree.
+```{r}
+tree=read.tree('pseudo.nwk')
+plot(tree)
+axisPhylo(1,backward = F)
+```
+Note that the tip labels do not indicate the host from which each genome was sampled, but this is stored in a separate matrix which can be loaded and converted into a named vector:
+
+```{r}
+h=as.matrix(read.csv('pseudo.csv',header = F))
+host=h[,2]
+names(host)=h[,1]
+```
+
+We can now combine the tree, host information, and date of the last sample (2008) to produce the input, and plot it to check that everything looks correct.
+```{r}
+pt=ptreeFromPhyloM(tree,2008,host=host)
+plot(pt)
+```
+
+We can now run the inference of the transmission tree. To keep this vignette quick to compile we will do only 1e2 iterations but this should be replaced with 1e5 to achieve good convergence and mixing of the MCMC.
+```{r}
+res=inferTTreeM(pt,mcmc.length=1e2,mcmc.thinning=1,w.shape=2,w.scale=5,obs.end=2010)
+```
+
+Show what the parameters were inferred to be.
+```{r}
+print(res)
+```
+
+Let's plot the colored tree for the iteration with the highest posterior probability.
+```{r}
+ps=unlist(lapply(res,function (x) x$pTTree+x$pPTree))
+w=which(ps==max(ps))
+m=res[[w]]$ctree
+plot(m)
+```
+
+Let's plot the matrix of probabilities of who infected whom:
+```{r}
+mat=computeMatWIWM(res)
+lattice::levelplot(mat,xlab='Infector',ylab='Infected',at=seq(0,1,length.out=20))
+```
