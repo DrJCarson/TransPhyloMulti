@@ -59,7 +59,17 @@ log_lik_ttree <- function(ttree, grid, fn_list, off.r, off.p, pi, w.shape, w.sca
 
     if (ttree[i, 3] == 0) {
 
-      log_lik <- log_lik - log(1 - omega_int)
+      if (omega_int < (1 - 1e-6)) {
+
+        log_lik <- log_lik - log(1 - omega_int)
+
+      } else {
+
+        log_lik <- -Inf
+
+        return(log_lik)
+
+      }
 
     }
 
