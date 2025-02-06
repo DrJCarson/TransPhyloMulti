@@ -27,6 +27,40 @@ computeMatWIWM = function(record,burnin=0.5)
   return(mat)
 }
 
+#' Build a matrix indicating for each pairs of individuals how many intermediates there are in the transmission chain
+#' @param record Output from inferTTree function
+#' @param burnin Proportion of the MCMC output to be discarded as burnin
+#' @return Matrix of intermediates in transmission chains between pairs of hosts
+#' @export
+computeMatTDistM = function(record,burnin=0.5)
+{
+  #Remove burnin
+  if (burnin>0) record=record[round(length(record)*burnin):length(record)]
+  m=length(record)
+  t1=extractTTreeM(record[[1]]$ctree)
+  n=length(unique(t1$obs[, 2])) #Number of sampled individuals
+  mat=matrix(0,n,n)
+  colnames(mat)<-1:n
+  rownames(mat)<-1:n
+
+  for (i in 1:length(record))
+  {
+    ttree=extractTTreeM(record[[i]]$ctree)$ttree
+    for (a in 2:n) for (b in 1:a) {
+      aa=a
+      bb=b
+      count=0
+      while (aa!=bb) {
+        if (ttree[aa,1]>ttree[bb,1]) aa=ttree[aa,3] else bb=ttree[bb,3]
+        count=count+1
+      }
+      mat[a,b]=mat[a,b]+count/length(record)
+      mat[b,a]=mat[a,b]
+    }
+  }
+  return(mat)
+}
+
 #' Convert resTransPhyloM object to coda mcmc format
 #' @param record Output from inferTTreeM function
 #' @param burnin Proportion of the MCMC output to be discarded as burnin
